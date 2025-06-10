@@ -33,6 +33,13 @@
       c.textContent = 'Hidden paths unlocked: ' + conditionals.join(', ') + '.';
       document.getElementById('summary').appendChild(c);
     }
+
+    const nulls = JSON.parse(localStorage.getItem('nullDialogs') || '[]');
+    if (nulls.length) {
+      const p = document.createElement('p');
+      p.textContent = 'Whispers heard: ' + nulls.slice(-2).join(' | ');
+      document.getElementById('summary').appendChild(p);
+    }
   </script>
 </body>
 </html>

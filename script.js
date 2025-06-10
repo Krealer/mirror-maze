@@ -81,6 +81,17 @@ const FLASHBACKS = [
 
 let triggeredFlashbacks = [];
 
+const nullDialogs = [
+  { text: "You are being observed." },
+  { text: () => `Your ${dominantEmotion()} is noted.` },
+  { text: "Compliance is your only freedom.", condition: (s) => s.emotions.fear > 2 },
+  { text: "The mirror is not your ally.", condition: (s) => s.triggeredFlashbacks.includes('hallway') },
+  { text: "You will remember this command." }
+];
+
+let triggeredNullDialogs = [];
+let lastNullRoom = -3;
+
 // Track which gated choices the player selected
 let conditionalChoicesTaken = [];
 
@@ -124,6 +135,33 @@ function updateBodyEmotion() {
     debugPanel.textContent = Object.entries(emotions)
       .map(([k, v]) => `${k}: ${v}`)
       .join(' | ');
+  }
+}
+
+function showNullDialog(text) {
+  const box = document.getElementById('null-dialog');
+  box.textContent = text;
+  box.classList.add('null-dialog-active');
+  const hide = () => {
+    box.classList.remove('null-dialog-active');
+    box.removeEventListener('click', hide);
+  };
+  box.addEventListener('click', hide);
+  setTimeout(hide, 3500);
+}
+
+function maybeTriggerNullDialog() {
+  const currentIndex = playerPath.length;
+  if (currentIndex - lastNullRoom < 2) return;
+  if (document.body.classList.contains('flashback-mode')) return;
+  const state = { emotions, triggeredFlashbacks };
+  const available = nullDialogs.filter(d => !d.condition || d.condition(state));
+  if (available.length && Math.random() < 0.3) {
+    const pick = available[Math.floor(Math.random() * available.length)];
+    const text = typeof pick.text === 'function' ? pick.text(state) : pick.text;
+    showNullDialog(text);
+    triggeredNullDialogs.push(text);
+    lastNullRoom = currentIndex;
   }
 }
 
@@ -199,6 +237,7 @@ function showRoom(roomId) {
         localStorage.setItem('dominantEmotion', dominantEmotion());
         localStorage.setItem('triggeredFlashbacks', JSON.stringify(triggeredFlashbacks));
         localStorage.setItem('conditionalChoices', JSON.stringify(conditionalChoicesTaken));
+        localStorage.setItem('nullDialogs', JSON.stringify(triggeredNullDialogs));
         window.location.href = 'summary.html';
       } else {
         showRoom(next);
@@ -211,6 +250,7 @@ function showRoom(roomId) {
   requestAnimationFrame(() => room.classList.add('visible'));
   updateBodyEmotion();
   checkForFlashbacks();
+  maybeTriggerNullDialog();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -218,6 +258,8 @@ document.addEventListener('DOMContentLoaded', () => {
   emotions = { fear: 0, hope: 0, anger: 0, curiosity: 0 };
   triggeredFlashbacks = [];
   conditionalChoicesTaken = [];
+  triggeredNullDialogs = [];
+  lastNullRoom = -3;
   debugPanel = document.createElement('div');
   debugPanel.id = 'debug';
   debugPanel.style.position = 'fixed';
