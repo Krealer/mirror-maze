@@ -94,35 +94,40 @@ function renderRoom(roomId) {
     lastNullRoom = -3;
     mazeCorruption = parseInt(localStorage.getItem('corruption') || '0');
     currentRoom = localStorage.getItem('currentRoom') || 'start';
-  debugPanel = document.createElement('div');
-  debugPanel.id = 'debug';
-  debugPanel.style.position = 'fixed';
-  debugPanel.style.bottom = '10px';
-  debugPanel.style.right = '10px';
-  debugPanel.style.padding = '4px 6px';
-  debugPanel.style.background = 'rgba(0,0,0,0.6)';
-  debugPanel.style.color = '#fff';
-  debugPanel.style.fontSize = '0.8em';
-  debugPanel.style.display = 'none';
-  document.body.appendChild(debugPanel);
+  const isDebug = ['localhost', '127.0.0.1'].includes(location.hostname) ||
+    new URLSearchParams(location.search).has('debug');
 
-  const toggle = document.createElement('button');
-  toggle.id = 'debug-toggle';
-  toggle.textContent = 'Debug';
-  toggle.style.position = 'fixed';
-  toggle.style.bottom = '10px';
-  toggle.style.left = '10px';
-  toggle.style.fontSize = '0.8em';
-  toggle.addEventListener('click', () => {
-    debugPanel.style.display = debugPanel.style.display === 'none' ? 'block' : 'none';
-    if (debugPanel.style.display === 'block') {
-      document.body.classList.add('debug-mode');
-    } else {
-      document.body.classList.remove('debug-mode');
-    }
-    updateBodyEmotion();
-  });
+  if (isDebug) {
+    debugPanel = document.createElement('div');
+    debugPanel.id = 'debug';
+    debugPanel.style.position = 'fixed';
+    debugPanel.style.bottom = '10px';
+    debugPanel.style.right = '10px';
+    debugPanel.style.padding = '4px 6px';
+    debugPanel.style.background = 'rgba(0,0,0,0.6)';
+    debugPanel.style.color = '#fff';
+    debugPanel.style.fontSize = '0.8em';
+    debugPanel.style.display = 'none';
+    document.body.appendChild(debugPanel);
+
+    const toggle = document.createElement('button');
+    toggle.id = 'debug-toggle';
+    toggle.textContent = 'Debug';
+    toggle.style.position = 'fixed';
+    toggle.style.bottom = '10px';
+    toggle.style.left = '10px';
+    toggle.style.fontSize = '0.8em';
+    toggle.addEventListener('click', () => {
+      debugPanel.style.display = debugPanel.style.display === 'none' ? 'block' : 'none';
+      if (debugPanel.style.display === 'block') {
+        document.body.classList.add('debug-mode');
+      } else {
+        document.body.classList.remove('debug-mode');
+      }
+      updateBodyEmotion();
+    });
     document.body.appendChild(toggle);
+  }
 
     const mapBtn = document.getElementById('self-map-btn');
     const mapClose = document.getElementById('self-map-close');
