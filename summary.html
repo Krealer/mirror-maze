@@ -18,6 +18,14 @@
       msg.textContent = `You journeyed with ${dominant} as your guide.`;
       document.getElementById('summary').appendChild(msg);
     }
+
+    const flashbacks = JSON.parse(localStorage.getItem('triggeredFlashbacks') || '[]');
+    if (flashbacks.length) {
+      const labels = { hallway: 'The Hallway', promise: 'The Promise' };
+      const wrap = document.createElement('p');
+      wrap.textContent = 'You remembered: ' + flashbacks.map(id => labels[id] || id).join(', ') + '.';
+      document.getElementById('summary').appendChild(wrap);
+    }
   </script>
 </body>
 </html>

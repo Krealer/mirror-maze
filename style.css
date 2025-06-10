@@ -87,3 +87,44 @@ button:hover {
   letter-spacing: 0.02em;
 }
 
+/* Flashback visual mode */
+.flashback-mode {
+  filter: grayscale(1);
+}
+
+.flashback-mode #maze {
+  filter: blur(4px);
+}
+
+#flashback-box {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  color: #fff;
+  z-index: 1000;
+}
+
+#flashback-box.show {
+  display: flex;
+}
+
+.flashback-text {
+  font-size: 1.2em;
+  margin-bottom: 20px;
+  opacity: 0;
+  animation: flashIn 1s forwards;
+}
+
+@keyframes flashIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
