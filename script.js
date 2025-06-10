@@ -238,6 +238,7 @@ let playerPath = [];
 let playerJourney = [];
 let emotions = { fear: 0, hope: 0, anger: 0, curiosity: 0 };
 let currentEmotionClass = '';
+let skills = { patternSense: false };
 let debugPanel = null;
 
 function applyEffects(effects) {
@@ -314,6 +315,33 @@ function maybeTriggerNullDialog() {
     lastNullRoom = currentIndex;
   }
 }
+function showPatternWarning(text, cb) {
+  const box = document.getElementById("pattern-warning");
+  if (!box) { if (cb) cb(); return; }
+  box.textContent = text;
+  box.classList.add("show");
+  const hide = () => {
+    box.classList.remove("show");
+    box.removeEventListener("click", hide);
+    if (cb) cb();
+  };
+  box.addEventListener("click", hide);
+  setTimeout(hide, 2500);
+}
+
+function showSkillUnlock(text) {
+  const box = document.getElementById("skill-unlock");
+  if (!box) { alert(text); return; }
+  box.textContent = text;
+  box.classList.add("show");
+  const hide = () => {
+    box.classList.remove("show");
+    box.removeEventListener("click", hide);
+  };
+  box.addEventListener("click", hide);
+  setTimeout(hide, 3000);
+}
+
 
 function showFlashback(text) {
   const box = document.getElementById('flashback-box');
@@ -360,6 +388,7 @@ function saveGameState() {
   localStorage.setItem('nullDialogs', JSON.stringify(triggeredNullDialogs));
   localStorage.setItem('playerJourney', JSON.stringify(playerJourney));
   localStorage.setItem('manipulationLog', JSON.stringify(manipulationLog));
+  localStorage.setItem('skills', JSON.stringify(skills));
 }
 
 function openSelfMap() {
@@ -434,6 +463,10 @@ function showManipulation(id, cb) {
   r.addEventListener('click', () => {
     manipulationLog.push({ room: event.id, tactic: event.type, outcome: 'resisted' });
     document.body.classList.remove('manipulation-mode');
+    if (!skills.patternSense) {
+      skills.patternSense = true;
+      showSkillUnlock("Skill Unlocked: Pattern Sense");
+    }
     showManipulationInfo(event.explanation, cb);
   });
   r.classList.add('resist');
@@ -470,6 +503,10 @@ function renderManipulationRoom(room) {
     document.body.classList.remove('manipulation-mode');
     playerPath.push(room.id);
     playerJourney.push({ roomId: room.id, choiceText: r.textContent, emotionSnapshot: dominantEmotion() });
+    if (!skills.patternSense) {
+      skills.patternSense = true;
+      showSkillUnlock("Skill Unlocked: Pattern Sense");
+    }
     showManipulationInfo(room.explanation, () => renderRoom(room.resistChoice.next));
   });
   maze.appendChild(r);
@@ -479,10 +516,18 @@ function renderRoom(roomId) {
   const roomData = MAZE[roomId] || manipulationRooms[roomId];
   if (!roomData) return;
   if (roomData.manipulation && !triggeredManipulations.includes(roomData.manipulation)) {
-    showManipulation(roomData.manipulation, () => {
-      triggeredManipulations.push(roomData.manipulation);
-      renderRoom(roomId);
-    });
+    const run = () => {
+      showManipulation(roomData.manipulation, () => {
+        triggeredManipulations.push(roomData.manipulation);
+        renderRoom(roomId);
+      });
+    };
+    if (skills.patternSense) {
+      const t = MANIPULATION_TACTICS[roomData.manipulation]?.type || roomData.manipulation;
+      showPatternWarning(`You sense ${t}...`, run);
+    } else {
+      run();
+    }
     return;
   }
   if (roomData.type === 'manipulation') {
@@ -551,6 +596,7 @@ function renderRoom(roomId) {
     playerJourney = [];
     emotions = { fear: 0, hope: 0, anger: 0, curiosity: 0 };
   triggeredFlashbacks = [];
+    skills = { patternSense: false };
   manipulationLog = [];
   triggeredManipulations = [];
   conditionalChoicesTaken = [];
