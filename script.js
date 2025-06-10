@@ -4,7 +4,13 @@ const MAZE = {
     prompt: "You wake up in a strange mirror room. Your reflection is missing. What do you do?",
     choices: [
       { text: "Call out", next: "echo", effects: { hope: 1, fear: -1 } },
-      { text: "Search silently", next: "shadow", effects: { curiosity: 1, fear: 1 } }
+      { text: "Search silently", next: "shadow", effects: { curiosity: 1, fear: 1 } },
+      {
+        text: "Remember the promise",
+        next: "echo",
+        condition: (_p, _e, flash) => flash.includes('promise'),
+        effects: { hope: 1 }
+      }
     ]
   },
   echo: {
@@ -20,7 +26,21 @@ const MAZE = {
     prompt: "A figure mimics you from the dark. It's you — but not quite.",
     choices: [
       { text: "Talk to it", next: "ending_b", effects: { curiosity: 1, hope: 1 } },
-      { text: "Attack it", next: "ending_c", effects: { anger: 2, fear: -1 } }
+      { text: "Attack it", next: "ending_c", effects: { anger: 2, fear: -1 } },
+      {
+        text: "Back away slowly",
+        next: "hidden",
+        condition: (_p, emo) => emo.fear >= 2,
+        effects: { fear: -1 }
+      }
+    ]
+  },
+  hidden: {
+    id: "hidden",
+    prompt: "You slip into a narrow corridor. The air is thick with mist.",
+    choices: [
+      { text: "Press forward", next: "ending_d", effects: { curiosity: 1 } },
+      { text: "Retreat", next: "start", effects: { fear: -1 } }
     ]
   },
   ending_a: {
@@ -36,6 +56,11 @@ const MAZE = {
   ending_c: {
     id: "ending_c",
     prompt: "You strike and shatter into pieces. End.",
+    choices: []
+  },
+  ending_d: {
+    id: "ending_d",
+    prompt: "A final door opens and you vanish beyond the mirrors. End.",
     choices: []
   }
 };
@@ -55,6 +80,9 @@ const FLASHBACKS = [
 ];
 
 let triggeredFlashbacks = [];
+
+// Track which gated choices the player selected
+let conditionalChoicesTaken = [];
 
 let playerPath = [];
 let emotions = { fear: 0, hope: 0, anger: 0, curiosity: 0 };
@@ -137,13 +165,32 @@ function showRoom(roomId) {
   p.textContent = roomData.prompt;
   room.appendChild(p);
 
-  roomData.choices.forEach(choice => {
+  const available = roomData.choices.filter(ch => {
+    if (!ch.condition) return true;
+    try {
+      return ch.condition(playerPath.slice(), emotions, triggeredFlashbacks.slice());
+    } catch (e) {
+      return false;
+    }
+  });
+
+  if (available.length === 0 && roomData.choices.length) {
+    available.push(roomData.choices[0]);
+  }
+
+  available.forEach(choice => {
     const btn = document.createElement('button');
     btn.textContent = choice.text;
+    if (choice.condition) {
+      btn.dataset.gated = 'true';
+    }
     btn.addEventListener('click', () => {
       playerPath.push(roomId);
       applyEffects(choice.effects);
       updateBodyEmotion();
+      if (choice.condition) {
+        conditionalChoicesTaken.push(choice.text);
+      }
       const next = choice.next;
       if (!MAZE[next] || MAZE[next].choices.length === 0) {
         playerPath.push(next);
@@ -151,6 +198,7 @@ function showRoom(roomId) {
         localStorage.setItem('emotions', JSON.stringify(emotions));
         localStorage.setItem('dominantEmotion', dominantEmotion());
         localStorage.setItem('triggeredFlashbacks', JSON.stringify(triggeredFlashbacks));
+        localStorage.setItem('conditionalChoices', JSON.stringify(conditionalChoicesTaken));
         window.location.href = 'summary.html';
       } else {
         showRoom(next);
@@ -169,6 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
   playerPath = [];
   emotions = { fear: 0, hope: 0, anger: 0, curiosity: 0 };
   triggeredFlashbacks = [];
+  conditionalChoicesTaken = [];
   debugPanel = document.createElement('div');
   debugPanel.id = 'debug';
   debugPanel.style.position = 'fixed';
@@ -190,6 +239,11 @@ document.addEventListener('DOMContentLoaded', () => {
   toggle.style.fontSize = '0.8em';
   toggle.addEventListener('click', () => {
     debugPanel.style.display = debugPanel.style.display === 'none' ? 'block' : 'none';
+    if (debugPanel.style.display === 'block') {
+      document.body.classList.add('debug-mode');
+    } else {
+      document.body.classList.remove('debug-mode');
+    }
     updateBodyEmotion();
   });
   document.body.appendChild(toggle);
