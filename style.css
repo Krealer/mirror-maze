@@ -361,3 +361,8 @@ button:hover {
   letter-spacing: 0.02em;
 }
 
+.epilogue--neutral {
+  background: #111;
+  color: #eee;
+}
+

@@ -8,28 +8,28 @@
 </head>
 <body>
   <div id="maze"></div>
-  <div id="flashback-box">
+  <div id="flashback-box" role="dialog" aria-modal="true" aria-labelledby="flashback-text">
     <div class="flashback-text" id="flashback-text"></div>
-    <button id="flashback-ok">Continue</button>
+    <button id="flashback-ok" aria-label="Close flashback">Continue</button>
   </div>
-  <div id="manipulation-info">
+  <div id="manipulation-info" role="dialog" aria-modal="true" aria-labelledby="manipulation-text">
     <div class="manipulation-text" id="manipulation-text"></div>
-    <button id="manipulation-ok">Continue</button>
+    <button id="manipulation-ok" aria-label="Close manipulation info">Continue</button>
   </div>
   <div id="null-dialog"></div>
   <div id="pattern-warning"></div>
   <div id="skill-unlock"></div>
-  <button id="self-map-btn" class="self-map-button">Self Map</button>
-  <button id="skills-btn" class="skills-button">Skills</button>
-  <div id="self-map-overlay" class="self-map-overlay">
-    <h2>Self Map</h2>
+  <button id="self-map-btn" class="self-map-button" aria-label="Open self map">Self Map</button>
+  <button id="skills-btn" class="skills-button" aria-label="Open skills">Skills</button>
+  <div id="self-map-overlay" class="self-map-overlay" role="dialog" aria-modal="true" aria-labelledby="self-map-title" aria-hidden="true">
+    <h2 id="self-map-title">Self Map</h2>
     <div id="self-map-content"></div>
-    <button id="self-map-close">Close</button>
+    <button id="self-map-close" aria-label="Close self map">Close</button>
   </div>
-  <div id="skills-overlay" class="skills-overlay">
-    <h2>Skills</h2>
+  <div id="skills-overlay" class="skills-overlay" role="dialog" aria-modal="true" aria-labelledby="skills-title" aria-hidden="true">
+    <h2 id="skills-title">Skills</h2>
     <div id="skills-content"></div>
-    <button id="skills-close">Close</button>
+    <button id="skills-close" aria-label="Close skills">Close</button>
   </div>
   <script src="script.js"></script>
   <script>
