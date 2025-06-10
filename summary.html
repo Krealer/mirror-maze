@@ -55,12 +55,12 @@
     const skills = JSON.parse(localStorage.getItem("skills") || "{}");
     if (skills.patternSense) {
       const sp = document.createElement("p");
-      sp.textContent = "Skill unlocked: Pattern Sense";
+      sp.textContent = `Skill unlocked: Pattern Sense - used ${skills.patternSenseUses || 0} times`;
       document.getElementById("summary").appendChild(sp);
     }
     if (skills.anchorUnlocked) {
       const ap = document.createElement("p");
-      ap.textContent = "Skill unlocked: Emotional Anchor" + (skills.anchor === 0 ? " (used)" : "");
+      ap.textContent = `Skill unlocked: Emotional Anchor - used ${skills.anchorUses || 0} times`;
       document.getElementById("summary").appendChild(ap);
     }
 
