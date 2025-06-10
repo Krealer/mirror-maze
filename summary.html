@@ -26,6 +26,13 @@
       wrap.textContent = 'You remembered: ' + flashbacks.map(id => labels[id] || id).join(', ') + '.';
       document.getElementById('summary').appendChild(wrap);
     }
+
+    const conditionals = JSON.parse(localStorage.getItem('conditionalChoices') || '[]');
+    if (conditionals.length) {
+      const c = document.createElement('p');
+      c.textContent = 'Hidden paths unlocked: ' + conditionals.join(', ') + '.';
+      document.getElementById('summary').appendChild(c);
+    }
   </script>
 </body>
 </html>

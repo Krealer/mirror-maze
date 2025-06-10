@@ -128,3 +128,8 @@ button:hover {
   to { opacity: 1; }
 }
 
+/* highlight gated choices when debug is active */
+.debug-mode button[data-gated="true"] {
+  outline: 1px dashed orange;
+}
+
