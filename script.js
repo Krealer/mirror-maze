@@ -41,7 +41,8 @@ const MAZE = {
     prompt: "You slip into a narrow corridor. The air is thick with mist.",
     choices: [
       { text: "Press forward", next: "ending_d", effects: { curiosity: 1 } },
-      { text: "Retreat", next: "start", effects: { fear: -1 } }
+      { text: "Retreat", next: "start", effects: { fear: -1 } },
+      { text: "Listen to the accusing whispers", next: "guilt_chamber", effects: { fear: 1 } }
     ]
   },
   ending_a: {
@@ -63,6 +64,25 @@ const MAZE = {
     id: "ending_d",
     prompt: "A final door opens and you vanish beyond the mirrors. End.",
     choices: []
+  }
+};
+
+const manipulationRooms = {
+  guilt_chamber: {
+    id: "guilt_chamber",
+    type: "manipulation",
+    tactic: "Guilt Trip",
+    text: "You remember her voice. Cold. Disappointed.\n\n'After everything, you still don\u2019t listen...'",
+    manipulatedChoices: [
+      { text: "I\u2019m sorry. I\u2019ll change.", next: "ending_a", effect: "submit" },
+      { text: "You\u2019re right. I\u2019ve failed.", next: "ending_a", effect: "submit" }
+    ],
+    resistChoice: {
+      text: "[Recognize Guilt Trap] My decisions are my own.",
+      next: "hidden",
+      effect: "resist"
+    },
+    explanation: "This was a guilt trip: reframing control as care, and making disobedience feel selfish."
   }
 };
 
@@ -322,7 +342,7 @@ function showManipulation(id, cb) {
     const b = document.createElement('button');
     b.textContent = ch.text;
     b.addEventListener('click', () => {
-      manipulationLog.push({ id: event.id, type: event.type, spotted: false });
+      manipulationLog.push({ room: event.id, tactic: event.type, outcome: 'submitted' });
       document.body.classList.remove('manipulation-mode');
       cb();
     });
@@ -332,7 +352,7 @@ function showManipulation(id, cb) {
   const r = document.createElement('button');
   r.textContent = event.resistChoice.text;
   r.addEventListener('click', () => {
-    manipulationLog.push({ id: event.id, type: event.type, spotted: true });
+    manipulationLog.push({ room: event.id, tactic: event.type, outcome: 'resisted' });
     document.body.classList.remove('manipulation-mode');
     showManipulationInfo(event.explanation, cb);
   });
@@ -340,14 +360,53 @@ function showManipulation(id, cb) {
   maze.appendChild(r);
 }
 
-function showRoom(roomId) {
-  const roomData = MAZE[roomId];
+function renderManipulationRoom(room) {
+  const maze = document.getElementById('maze');
+  maze.innerHTML = '';
+  document.body.classList.add('manipulation-mode');
+
+  const p = document.createElement('p');
+  p.textContent = room.text;
+  maze.appendChild(p);
+
+  room.manipulatedChoices.forEach(choice => {
+    const b = document.createElement('button');
+    b.textContent = choice.text;
+    b.addEventListener('click', () => {
+      manipulationLog.push({ room: room.id, tactic: room.tactic, outcome: 'submitted' });
+      document.body.classList.remove('manipulation-mode');
+      playerPath.push(room.id);
+      playerJourney.push({ roomId: room.id, choiceText: choice.text, emotionSnapshot: dominantEmotion() });
+      renderRoom(choice.next);
+    });
+    maze.appendChild(b);
+  });
+
+  const r = document.createElement('button');
+  r.textContent = room.resistChoice.text;
+  r.classList.add('resist');
+  r.addEventListener('click', () => {
+    manipulationLog.push({ room: room.id, tactic: room.tactic, outcome: 'resisted' });
+    document.body.classList.remove('manipulation-mode');
+    playerPath.push(room.id);
+    playerJourney.push({ roomId: room.id, choiceText: r.textContent, emotionSnapshot: dominantEmotion() });
+    showManipulationInfo(room.explanation, () => renderRoom(room.resistChoice.next));
+  });
+  maze.appendChild(r);
+}
+
+function renderRoom(roomId) {
+  const roomData = MAZE[roomId] || manipulationRooms[roomId];
   if (!roomData) return;
   if (roomData.manipulation && !triggeredManipulations.includes(roomData.manipulation)) {
     showManipulation(roomData.manipulation, () => {
       triggeredManipulations.push(roomData.manipulation);
-      showRoom(roomId);
+      renderRoom(roomId);
     });
+    return;
+  }
+  if (roomData.type === 'manipulation') {
+    renderManipulationRoom(roomData);
     return;
   }
   const maze = document.getElementById('maze');
@@ -394,7 +453,7 @@ function showRoom(roomId) {
         saveGameState();
         window.location.href = 'summary.html';
       } else {
-        showRoom(next);
+        renderRoom(next);
       }
     });
     room.appendChild(btn);
@@ -454,7 +513,7 @@ function showRoom(roomId) {
       mapClose.addEventListener('click', closeSelfMap);
     }
 
-  showRoom('start');
+  renderRoom('start');
   updateBodyEmotion();
 });
 
@@ -463,4 +522,5 @@ window.getFinalEnding = getFinalEnding;
 window.getDominantEmotion = getDominantEmotion;
 window.saveGameState = saveGameState;
 window.endings = endings;
+window.renderRoom = renderRoom;
 

@@ -45,11 +45,11 @@
 
     const manip = JSON.parse(localStorage.getItem('manipulationLog') || '[]');
     if (manip.length) {
-      const spotted = manip.filter(m => m.spotted).length;
-      const missed = manip.length - spotted;
-      const patterns = [...new Set(manip.map(m => m.type))].join(', ');
+      const resisted = manip.filter(m => m.outcome === 'resisted').length;
+      const submitted = manip.length - resisted;
+      const tactics = [...new Set(manip.map(m => m.tactic))].join(', ');
       const p = document.createElement('p');
-      p.textContent = `Manipulations spotted: ${spotted}/${manip.length}. Missed: ${missed}. Patterns: ${patterns}.`;
+      p.textContent = `You resisted ${resisted}/${manip.length} manipulations. Fell for: ${submitted}. Tactics encountered: ${tactics}.`;
       document.getElementById('summary').appendChild(p);
     }
 
