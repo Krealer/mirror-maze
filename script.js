@@ -238,6 +238,8 @@ let playerPath = [];
 let playerJourney = [];
 let emotions = { fear: 0, hope: 0, anger: 0, curiosity: 0 };
 let currentEmotionClass = '';
+let currentRoom = 'start';
+let lastFocusedElement = null;
 let skills = {
   patternSense: false,
   patternSenseUses: 0,
@@ -386,10 +388,13 @@ function showFlashback(text) {
   txt.textContent = text;
   box.classList.add('show');
   document.body.classList.add('flashback-mode');
+  lastFocusedElement = document.activeElement;
+  btn.focus();
   const handler = () => {
     box.classList.remove('show');
     document.body.classList.remove('flashback-mode');
     btn.removeEventListener('click', handler);
+    if (lastFocusedElement) lastFocusedElement.focus();
   };
   btn.addEventListener('click', handler);
 }
@@ -427,6 +432,7 @@ function saveGameState() {
   localStorage.setItem('manipulationLog', JSON.stringify(manipulationLog));
   localStorage.setItem('skills', JSON.stringify(skills));
   localStorage.setItem('corruption', mazeCorruption);
+  localStorage.setItem('currentRoom', currentRoom);
 }
 
 function openSelfMap() {
@@ -451,10 +457,17 @@ function openSelfMap() {
     list.appendChild(div);
   });
   overlay.classList.add('show');
+  overlay.setAttribute('aria-hidden', 'false');
+  lastFocusedElement = document.activeElement;
+  const closeBtn = document.getElementById('self-map-close');
+  if (closeBtn) closeBtn.focus();
 }
 
 function closeSelfMap() {
-  document.getElementById('self-map-overlay').classList.remove('show');
+  const overlay = document.getElementById('self-map-overlay');
+  overlay.classList.remove('show');
+  overlay.setAttribute('aria-hidden', 'true');
+  if (lastFocusedElement) lastFocusedElement.focus();
 }
 
 function openSkills() {
@@ -486,10 +499,17 @@ function openSkills() {
     list.appendChild(div);
   });
   overlay.classList.add('show');
+  overlay.setAttribute('aria-hidden', 'false');
+  lastFocusedElement = document.activeElement;
+  const closeBtn = document.getElementById('skills-close');
+  if (closeBtn) closeBtn.focus();
 }
 
 function closeSkills() {
-  document.getElementById('skills-overlay').classList.remove('show');
+  const overlay = document.getElementById('skills-overlay');
+  overlay.classList.remove('show');
+  overlay.setAttribute('aria-hidden', 'true');
+  if (lastFocusedElement) lastFocusedElement.focus();
 }
 
 function showManipulationInfo(text, cb) {
@@ -503,9 +523,12 @@ function showManipulationInfo(text, cb) {
   }
   txt.textContent = text;
   box.classList.add('show');
+  lastFocusedElement = document.activeElement;
+  btn.focus();
   const handler = () => {
     box.classList.remove('show');
     btn.removeEventListener('click', handler);
+    if (lastFocusedElement) lastFocusedElement.focus();
     cb();
   };
   btn.addEventListener('click', handler);
@@ -635,6 +658,7 @@ function renderManipulationRoom(room) {
 }
 
 function renderRoom(roomId) {
+  currentRoom = roomId;
   const roomData = MAZE[roomId] || manipulationRooms[roomId];
   if (!roomData) return;
   if (roomData.manipulation && !triggeredManipulations.includes(roomData.manipulation)) {
@@ -714,23 +738,21 @@ function renderRoom(roomId) {
 }
 
   document.addEventListener('DOMContentLoaded', () => {
-    playerPath = [];
-    playerJourney = [];
-    emotions = { fear: 0, hope: 0, anger: 0, curiosity: 0 };
-  triggeredFlashbacks = [];
-    skills = {
-      patternSense: false,
-      patternSenseUses: 0,
-      anchor: 0,
-      anchorUnlocked: false,
-      anchorUses: 0
-    };
-  manipulationLog = [];
-  triggeredManipulations = [];
-  conditionalChoicesTaken = [];
-  triggeredNullDialogs = [];
-  lastNullRoom = -3;
-  mazeCorruption = parseInt(localStorage.getItem('corruption') || '0');
+    playerPath = JSON.parse(localStorage.getItem('playerPath') || '[]');
+    playerJourney = JSON.parse(localStorage.getItem('playerJourney') || '[]');
+    emotions = JSON.parse(
+      localStorage.getItem('emotions') ||
+        JSON.stringify({ fear: 0, hope: 0, anger: 0, curiosity: 0 })
+    );
+    triggeredFlashbacks = JSON.parse(localStorage.getItem('triggeredFlashbacks') || '[]');
+    skills = Object.assign(skills, JSON.parse(localStorage.getItem('skills') || '{}'));
+    manipulationLog = JSON.parse(localStorage.getItem('manipulationLog') || '[]');
+    triggeredManipulations = [];
+    conditionalChoicesTaken = JSON.parse(localStorage.getItem('conditionalChoices') || '[]');
+    triggeredNullDialogs = JSON.parse(localStorage.getItem('nullDialogs') || '[]');
+    lastNullRoom = -3;
+    mazeCorruption = parseInt(localStorage.getItem('corruption') || '0');
+    currentRoom = localStorage.getItem('currentRoom') || 'start';
   debugPanel = document.createElement('div');
   debugPanel.id = 'debug';
   debugPanel.style.position = 'fixed';
@@ -775,7 +797,7 @@ function renderRoom(roomId) {
       skillsClose.addEventListener('click', closeSkills);
     }
 
-  renderRoom('start');
+  renderRoom(currentRoom);
   updateBodyEmotion();
 });
 

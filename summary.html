@@ -86,9 +86,11 @@
     state.dominantEmotion = dominant;
     const ending = getFinalEnding(state);
     const ep = document.getElementById('epilogue');
-    ep.classList.add(`epilogue--${dominant}`);
+    const epClass = dominant ? `epilogue--${dominant}` : 'epilogue--neutral';
+    ep.classList.add(epClass);
     ep.innerHTML = `<p>${ending.text}</p>`;
     const replay = document.createElement('button');
+    replay.setAttribute('aria-label', 'Restart game');
     replay.textContent = 'Re-enter the Maze';
     replay.addEventListener('click', () => { localStorage.clear(); window.location.href = 'maze.html'; });
     ep.appendChild(replay);
