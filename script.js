@@ -40,6 +40,22 @@ const MAZE = {
   }
 };
 
+// Flashback fragments triggered by emotions or path choices
+const FLASHBACKS = [
+  {
+    id: 'hallway',
+    condition: (path, emo) => emo.fear > 3 && path.includes('shadow'),
+    text: 'A dark hallway from your childhood closes in around you. Damp stone, distant screams \u2014 you\'d tried to forget.'
+  },
+  {
+    id: 'promise',
+    condition: (path, emo) => emo.hope > 2 && path.includes('echo'),
+    text: 'You remember a warm hand and the promise you whispered to never let go.'
+  }
+];
+
+let triggeredFlashbacks = [];
+
 let playerPath = [];
 let emotions = { fear: 0, hope: 0, anger: 0, curiosity: 0 };
 let currentEmotionClass = '';
@@ -83,6 +99,31 @@ function updateBodyEmotion() {
   }
 }
 
+function showFlashback(text) {
+  const box = document.getElementById('flashback-box');
+  const txt = document.getElementById('flashback-text');
+  const btn = document.getElementById('flashback-ok');
+  txt.textContent = text;
+  box.classList.add('show');
+  document.body.classList.add('flashback-mode');
+  const handler = () => {
+    box.classList.remove('show');
+    document.body.classList.remove('flashback-mode');
+    btn.removeEventListener('click', handler);
+  };
+  btn.addEventListener('click', handler);
+}
+
+function checkForFlashbacks() {
+  for (const fb of FLASHBACKS) {
+    if (!triggeredFlashbacks.includes(fb.id) && fb.condition(playerPath, emotions)) {
+      triggeredFlashbacks.push(fb.id);
+      showFlashback(fb.text);
+      break;
+    }
+  }
+}
+
 function showRoom(roomId) {
   const roomData = MAZE[roomId];
   if (!roomData) return;
@@ -109,6 +150,7 @@ function showRoom(roomId) {
         localStorage.setItem('playerPath', JSON.stringify(playerPath));
         localStorage.setItem('emotions', JSON.stringify(emotions));
         localStorage.setItem('dominantEmotion', dominantEmotion());
+        localStorage.setItem('triggeredFlashbacks', JSON.stringify(triggeredFlashbacks));
         window.location.href = 'summary.html';
       } else {
         showRoom(next);
@@ -120,11 +162,13 @@ function showRoom(roomId) {
   maze.appendChild(room);
   requestAnimationFrame(() => room.classList.add('visible'));
   updateBodyEmotion();
+  checkForFlashbacks();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   playerPath = [];
   emotions = { fear: 0, hope: 0, anger: 0, curiosity: 0 };
+  triggeredFlashbacks = [];
   debugPanel = document.createElement('div');
   debugPanel.id = 'debug';
   debugPanel.style.position = 'fixed';
