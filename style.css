@@ -37,3 +37,19 @@ button {
 button:hover {
   background: #555;
 }
+
+body.fear {
+  background: #300;
+}
+
+body.hope {
+  background: #031;
+}
+
+body.anger {
+  background: #600;
+}
+
+body.curiosity {
+  background: #013;
+}

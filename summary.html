@@ -9,5 +9,15 @@
   <div id="summary">
     <p>Thanks for playing. Your journey has been recorded.</p>
   </div>
+  <script>
+    const emotions = JSON.parse(localStorage.getItem('emotions') || '{}');
+    const dominant = localStorage.getItem('dominantEmotion');
+    if (dominant) {
+      document.body.classList.add(dominant);
+      const msg = document.createElement('p');
+      msg.textContent = `You journeyed with ${dominant} as your guide.`;
+      document.getElementById('summary').appendChild(msg);
+    }
+  </script>
 </body>
 </html>
