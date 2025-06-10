@@ -27,3 +27,7 @@ The project is entirely static and does not require a build step. There are also
    `https://<username>.github.io/<repository>/`.
 
 Enjoy exploring the maze!
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
