@@ -238,7 +238,7 @@ let playerPath = [];
 let playerJourney = [];
 let emotions = { fear: 0, hope: 0, anger: 0, curiosity: 0 };
 let currentEmotionClass = '';
-let skills = { patternSense: false };
+let skills = { patternSense: false, anchor: 0, anchorUnlocked: false };
 let debugPanel = null;
 
 function applyEffects(effects) {
@@ -342,6 +342,16 @@ function showSkillUnlock(text) {
   setTimeout(hide, 3000);
 }
 
+function maybeGrantAnchor() {
+  if (skills.anchorUnlocked) return;
+  const resisted = manipulationLog.filter(m => m.outcome === 'resisted').length;
+  if (resisted >= 2 && triggeredFlashbacks.includes('promise')) {
+    skills.anchor = 1;
+    skills.anchorUnlocked = true;
+    showSkillUnlock('Skill Unlocked: Emotional Anchor');
+  }
+}
+
 
 function showFlashback(text) {
   const box = document.getElementById('flashback-box');
@@ -363,6 +373,7 @@ function checkForFlashbacks() {
     if (!triggeredFlashbacks.includes(fb.id) && fb.condition(playerPath, emotions)) {
       triggeredFlashbacks.push(fb.id);
       showFlashback(fb.text);
+      maybeGrantAnchor();
       break;
     }
   }
@@ -463,6 +474,7 @@ function showManipulation(id, cb) {
   r.addEventListener('click', () => {
     manipulationLog.push({ room: event.id, tactic: event.type, outcome: 'resisted' });
     document.body.classList.remove('manipulation-mode');
+    maybeGrantAnchor();
     if (!skills.patternSense) {
       skills.patternSense = true;
       showSkillUnlock("Skill Unlocked: Pattern Sense");
@@ -471,6 +483,20 @@ function showManipulation(id, cb) {
   });
   r.classList.add('resist');
   maze.appendChild(r);
+
+  if (skills.anchor > 0) {
+    const a = document.createElement('button');
+    a.textContent = '[Emotional Anchor] Hold to my truth';
+    a.classList.add('anchor');
+    a.addEventListener('click', () => {
+      skills.anchor -= 1;
+      manipulationLog.push({ room: event.id, tactic: event.type, outcome: 'anchored' });
+      document.body.classList.remove('manipulation-mode');
+      showSkillUnlock('Emotional Anchor Used');
+      cb();
+    });
+    maze.appendChild(a);
+  }
 }
 
 function renderManipulationRoom(room) {
@@ -503,6 +529,7 @@ function renderManipulationRoom(room) {
     document.body.classList.remove('manipulation-mode');
     playerPath.push(room.id);
     playerJourney.push({ roomId: room.id, choiceText: r.textContent, emotionSnapshot: dominantEmotion() });
+    maybeGrantAnchor();
     if (!skills.patternSense) {
       skills.patternSense = true;
       showSkillUnlock("Skill Unlocked: Pattern Sense");
@@ -510,6 +537,22 @@ function renderManipulationRoom(room) {
     showManipulationInfo(room.explanation, () => renderRoom(room.resistChoice.next));
   });
   maze.appendChild(r);
+
+  if (skills.anchor > 0) {
+    const a = document.createElement('button');
+    a.textContent = '[Emotional Anchor] Hold to my truth';
+    a.classList.add('anchor');
+    a.addEventListener('click', () => {
+      skills.anchor -= 1;
+      manipulationLog.push({ room: room.id, tactic: room.tactic, outcome: 'anchored' });
+      document.body.classList.remove('manipulation-mode');
+      playerPath.push(room.id);
+      playerJourney.push({ roomId: room.id, choiceText: a.textContent, emotionSnapshot: dominantEmotion() });
+      showSkillUnlock('Emotional Anchor Used');
+      renderRoom(room.resistChoice.next);
+    });
+    maze.appendChild(a);
+  }
 }
 
 function renderRoom(roomId) {
@@ -596,7 +639,7 @@ function renderRoom(roomId) {
     playerJourney = [];
     emotions = { fear: 0, hope: 0, anger: 0, curiosity: 0 };
   triggeredFlashbacks = [];
-    skills = { patternSense: false };
+    skills = { patternSense: false, anchor: 0, anchorUnlocked: false };
   manipulationLog = [];
   triggeredManipulations = [];
   conditionalChoicesTaken = [];

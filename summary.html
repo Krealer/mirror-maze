@@ -58,6 +58,11 @@
       sp.textContent = "Skill unlocked: Pattern Sense";
       document.getElementById("summary").appendChild(sp);
     }
+    if (skills.anchorUnlocked) {
+      const ap = document.createElement("p");
+      ap.textContent = "Skill unlocked: Emotional Anchor" + (skills.anchor === 0 ? " (used)" : "");
+      document.getElementById("summary").appendChild(ap);
+    }
 
     const journey = JSON.parse(localStorage.getItem('playerJourney') || '[]');
     if (journey.length) {

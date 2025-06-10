@@ -139,6 +139,10 @@ button:hover {
   border: 1px solid #f55;
 }
 
+.anchor {
+  border: 1px solid #8af;
+}
+
 #flashback-box {
   position: fixed;
   top: 0;
