@@ -52,6 +52,12 @@
       p.textContent = `You resisted ${resisted}/${manip.length} manipulations. Fell for: ${submitted}. Tactics encountered: ${tactics}.`;
       document.getElementById('summary').appendChild(p);
     }
+    const skills = JSON.parse(localStorage.getItem("skills") || "{}");
+    if (skills.patternSense) {
+      const sp = document.createElement("p");
+      sp.textContent = "Skill unlocked: Pattern Sense";
+      document.getElementById("summary").appendChild(sp);
+    }
 
     const journey = JSON.parse(localStorage.getItem('playerJourney') || '[]');
     if (journey.length) {
