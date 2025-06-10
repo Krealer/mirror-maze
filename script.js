@@ -16,9 +16,11 @@ const MAZE = {
   echo: {
     id: "echo",
     prompt: "Your voice bounces endlessly. You feel watched.",
+    manipulation: "gaslighting",
     choices: [
       { text: "Stay still", next: "ending_a", effects: { fear: 1 } },
-      { text: "Run", next: "shadow", effects: { fear: 1, hope: -1 } }
+      { text: "Run", next: "shadow", effects: { fear: 1, hope: -1 } },
+      { text: "Reach for the warm glow", next: "idol_room", effects: { hope: 1 } }
     ]
   },
   shadow: {
@@ -28,6 +30,7 @@ const MAZE = {
     choices: [
       { text: "Talk to it", next: "ending_b", effects: { curiosity: 1, hope: 1 } },
       { text: "Attack it", next: "ending_c", effects: { anger: 2, fear: -1 } },
+      { text: "Let it draw nearer", next: "cornered", effects: { fear: 1 } },
       {
         text: "Back away slowly",
         next: "hidden",
@@ -39,10 +42,29 @@ const MAZE = {
   hidden: {
     id: "hidden",
     prompt: "You slip into a narrow corridor. The air is thick with mist.",
+    manipulation: "false_hope",
     choices: [
       { text: "Press forward", next: "ending_d", effects: { curiosity: 1 } },
       { text: "Retreat", next: "start", effects: { fear: -1 } },
       { text: "Listen to the accusing whispers", next: "guilt_chamber", effects: { fear: 1 } }
+    ]
+  },
+  idol_room: {
+    id: "idol_room",
+    prompt: "A warm glow surrounds you with praise from unseen voices.",
+    manipulation: "love_bombing",
+    choices: [
+      { text: "Bask in it", next: "ending_b", effects: { hope: 1 } },
+      { text: "Step away", next: "hidden", effects: { curiosity: 1 } }
+    ]
+  },
+  cornered: {
+    id: "cornered",
+    prompt: "Mirrors close in around you, leaving no escape.",
+    manipulation: "threat_escalation",
+    choices: [
+      { text: "Push through", next: "hidden", effects: { anger: 1 } },
+      { text: "Collapse", next: "ending_a", effects: { fear: 2 } }
     ]
   },
   ending_a: {
@@ -101,6 +123,61 @@ const FLASHBACKS = [
 ];
 
 let triggeredFlashbacks = [];
+
+const MANIPULATION_TACTICS = {
+  gaslighting: {
+    type: "Gaslighting",
+    text: "The voice scoffs: 'You imagined that. None of this is real.'",
+    manipulatedChoices: [
+      { text: "Maybe I did imagine it…", effect: "doubt" },
+      { text: "You're right, I'm confused.", effect: "submit" }
+    ],
+    resistChoice: {
+      text: "[Hold to your memory] I know what I heard.",
+      effect: "resist_gaslighting"
+    },
+    explanation: "Gaslighting tries to overwrite your reality so you question yourself."
+  },
+  love_bombing: {
+    type: "Love Bombing",
+    text: "Affection floods the hall. 'You're perfect. Stay forever.'",
+    manipulatedChoices: [
+      { text: "Yes, don't leave me.", effect: "cling" },
+      { text: "I finally feel valued.", effect: "give_in" }
+    ],
+    resistChoice: {
+      text: "[See through it] I can stand on my own.",
+      effect: "resist_love"
+    },
+    explanation: "Love bombing smothers you with praise to lower your guard."
+  },
+  false_hope: {
+    type: "False Hope",
+    text: "'Just one more door and you're free,' the reflection promises.",
+    manipulatedChoices: [
+      { text: "Lead the way.", effect: "chase_hope" },
+      { text: "Finally, a way out!", effect: "submit" }
+    ],
+    resistChoice: {
+      text: "[Doubt it] I've heard this before.",
+      effect: "resist_false_hope"
+    },
+    explanation: "False hope keeps you compliant with empty promises."
+  },
+  threat_escalation: {
+    type: "Threat Escalation",
+    text: "The walls close in. 'Obey, or the mirrors will break you.'",
+    manipulatedChoices: [
+      { text: "I'll do whatever you want.", effect: "submit" },
+      { text: "Please, don't hurt me.", effect: "fear" }
+    ],
+    resistChoice: {
+      text: "[Stand firm] Do your worst.",
+      effect: "resist_threat"
+    },
+    explanation: "Threat escalation intimidates you into obedience."
+  }
+};
 
 const manipulationEncounters = [
   {
@@ -328,7 +405,10 @@ function showManipulationInfo(text, cb) {
 }
 
 function showManipulation(id, cb) {
-  const event = manipulationEncounters.find(m => m.id === id);
+  let event = manipulationEncounters.find(m => m.id === id);
+  if (!event && MANIPULATION_TACTICS[id]) {
+    event = { id, ...MANIPULATION_TACTICS[id] };
+  }
   if (!event) { cb(); return; }
   const maze = document.getElementById('maze');
   maze.innerHTML = '';
