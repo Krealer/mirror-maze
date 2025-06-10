@@ -238,7 +238,13 @@ let playerPath = [];
 let playerJourney = [];
 let emotions = { fear: 0, hope: 0, anger: 0, curiosity: 0 };
 let currentEmotionClass = '';
-let skills = { patternSense: false, anchor: 0, anchorUnlocked: false };
+let skills = {
+  patternSense: false,
+  patternSenseUses: 0,
+  anchor: 0,
+  anchorUnlocked: false,
+  anchorUses: 0
+};
 let debugPanel = null;
 
 function applyEffects(effects) {
@@ -317,6 +323,9 @@ function maybeTriggerNullDialog() {
 }
 function showPatternWarning(text, cb) {
   const box = document.getElementById("pattern-warning");
+  if (skills.patternSense) {
+    skills.patternSenseUses = (skills.patternSenseUses || 0) + 1;
+  }
   if (!box) { if (cb) cb(); return; }
   box.textContent = text;
   box.classList.add("show");
@@ -425,6 +434,41 @@ function closeSelfMap() {
   document.getElementById('self-map-overlay').classList.remove('show');
 }
 
+function openSkills() {
+  const overlay = document.getElementById('skills-overlay');
+  const list = document.getElementById('skills-content');
+  list.innerHTML = '';
+  const entries = [];
+  entries.push({
+    unlocked: skills.patternSense,
+    name: 'Pattern Sense',
+    uses: skills.patternSenseUses || 0,
+    desc: 'Recognize manipulation tactics before they unfold.'
+  });
+  entries.push({
+    unlocked: skills.anchorUnlocked,
+    name: 'Emotional Anchor',
+    uses: skills.anchorUses || 0,
+    desc: 'Ground yourself in self-trust to resist manipulation.'
+  });
+  entries.forEach(e => {
+    const div = document.createElement('div');
+    div.className = 'self-map-entry';
+    const title = document.createElement('strong');
+    title.textContent = e.name + (e.unlocked ? '' : ' (Locked)');
+    div.appendChild(title);
+    const info = document.createElement('div');
+    info.textContent = e.desc + (e.unlocked ? ` - Used ${e.uses} times` : '');
+    div.appendChild(info);
+    list.appendChild(div);
+  });
+  overlay.classList.add('show');
+}
+
+function closeSkills() {
+  document.getElementById('skills-overlay').classList.remove('show');
+}
+
 function showManipulationInfo(text, cb) {
   const box = document.getElementById('manipulation-info');
   const txt = document.getElementById('manipulation-text');
@@ -490,6 +534,7 @@ function showManipulation(id, cb) {
     a.classList.add('anchor');
     a.addEventListener('click', () => {
       skills.anchor -= 1;
+      skills.anchorUses = (skills.anchorUses || 0) + 1;
       manipulationLog.push({ room: event.id, tactic: event.type, outcome: 'anchored' });
       document.body.classList.remove('manipulation-mode');
       showSkillUnlock('Emotional Anchor Used');
@@ -544,6 +589,7 @@ function renderManipulationRoom(room) {
     a.classList.add('anchor');
     a.addEventListener('click', () => {
       skills.anchor -= 1;
+      skills.anchorUses = (skills.anchorUses || 0) + 1;
       manipulationLog.push({ room: room.id, tactic: room.tactic, outcome: 'anchored' });
       document.body.classList.remove('manipulation-mode');
       playerPath.push(room.id);
@@ -639,7 +685,13 @@ function renderRoom(roomId) {
     playerJourney = [];
     emotions = { fear: 0, hope: 0, anger: 0, curiosity: 0 };
   triggeredFlashbacks = [];
-    skills = { patternSense: false, anchor: 0, anchorUnlocked: false };
+    skills = {
+      patternSense: false,
+      patternSenseUses: 0,
+      anchor: 0,
+      anchorUnlocked: false,
+      anchorUses: 0
+    };
   manipulationLog = [];
   triggeredManipulations = [];
   conditionalChoicesTaken = [];
@@ -680,6 +732,13 @@ function renderRoom(roomId) {
     if (mapBtn && mapClose) {
       mapBtn.addEventListener('click', openSelfMap);
       mapClose.addEventListener('click', closeSelfMap);
+    }
+
+    const skillsBtn = document.getElementById('skills-btn');
+    const skillsClose = document.getElementById('skills-close');
+    if (skillsBtn && skillsClose) {
+      skillsBtn.addEventListener('click', openSkills);
+      skillsClose.addEventListener('click', closeSkills);
     }
 
   renderRoom('start');
