@@ -19,5 +19,12 @@
     <button id="self-map-close">Close</button>
   </div>
   <script src="script.js"></script>
+  <script>
+    window.addEventListener('beforeunload', () => {
+      if (typeof saveGameState === 'function') {
+        saveGameState();
+      }
+    });
+  </script>
 </body>
 </html>

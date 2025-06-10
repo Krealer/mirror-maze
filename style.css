@@ -209,3 +209,61 @@ button:hover {
   padding: 20px;
 }
 
+.epilogue {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 20px;
+  opacity: 0;
+  transition: opacity 1s ease;
+  z-index: 3000;
+}
+
+.epilogue.show {
+  opacity: 1;
+}
+
+.epilogue button {
+  margin-top: 20px;
+}
+
+.epilogue--fear {
+  background: radial-gradient(circle at 50% 50%, #210033, #000);
+  color: #d0caff;
+  letter-spacing: -0.02em;
+  animation: fearGlow 4s ease-in-out infinite;
+}
+
+.epilogue--hope {
+  background: radial-gradient(circle at top, #fff9c4, #fffbe6);
+  color: #222;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.epilogue--anger {
+  background: linear-gradient(45deg, #550000, #9e1305);
+  color: #ffd0d0;
+  animation: angerShake 0.3s ease-in-out infinite alternate;
+}
+
+.epilogue--curiosity {
+  background: linear-gradient(135deg, #00334f, #007a6e);
+  background-size: 400% 400%;
+  color: #bff;
+  animation: curiosityShift 8s ease infinite;
+}
+
+.epilogue--sadness {
+  background: linear-gradient(#223, #456);
+  color: #cfd8e6;
+  letter-spacing: 0.02em;
+}
+
