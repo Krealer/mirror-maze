@@ -42,6 +42,8 @@ const MAZE = {
 
 let playerPath = [];
 let emotions = { fear: 0, hope: 0, anger: 0, curiosity: 0 };
+let currentEmotionClass = '';
+let debugPanel = null;
 
 function applyEffects(effects) {
   if (!effects) return;
@@ -60,6 +62,25 @@ function dominantEmotion() {
     }
   }
   return top;
+}
+
+function updateBodyEmotion() {
+  const dom = dominantEmotion();
+  const cls = dom ? `emotion-${dom}` : '';
+  if (cls !== currentEmotionClass) {
+    if (currentEmotionClass) {
+      document.body.classList.remove(currentEmotionClass);
+    }
+    if (cls) {
+      document.body.classList.add(cls);
+    }
+    currentEmotionClass = cls;
+  }
+  if (debugPanel) {
+    debugPanel.textContent = Object.entries(emotions)
+      .map(([k, v]) => `${k}: ${v}`)
+      .join(' | ');
+  }
 }
 
 function showRoom(roomId) {
@@ -81,6 +102,7 @@ function showRoom(roomId) {
     btn.addEventListener('click', () => {
       playerPath.push(roomId);
       applyEffects(choice.effects);
+      updateBodyEmotion();
       const next = choice.next;
       if (!MAZE[next] || MAZE[next].choices.length === 0) {
         playerPath.push(next);
@@ -97,10 +119,38 @@ function showRoom(roomId) {
 
   maze.appendChild(room);
   requestAnimationFrame(() => room.classList.add('visible'));
+  updateBodyEmotion();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   playerPath = [];
   emotions = { fear: 0, hope: 0, anger: 0, curiosity: 0 };
+  debugPanel = document.createElement('div');
+  debugPanel.id = 'debug';
+  debugPanel.style.position = 'fixed';
+  debugPanel.style.bottom = '10px';
+  debugPanel.style.right = '10px';
+  debugPanel.style.padding = '4px 6px';
+  debugPanel.style.background = 'rgba(0,0,0,0.6)';
+  debugPanel.style.color = '#fff';
+  debugPanel.style.fontSize = '0.8em';
+  debugPanel.style.display = 'none';
+  document.body.appendChild(debugPanel);
+
+  const toggle = document.createElement('button');
+  toggle.id = 'debug-toggle';
+  toggle.textContent = 'Debug';
+  toggle.style.position = 'fixed';
+  toggle.style.bottom = '10px';
+  toggle.style.left = '10px';
+  toggle.style.fontSize = '0.8em';
+  toggle.addEventListener('click', () => {
+    debugPanel.style.display = debugPanel.style.display === 'none' ? 'block' : 'none';
+    updateBodyEmotion();
+  });
+  document.body.appendChild(toggle);
+
   showRoom('start');
+  updateBodyEmotion();
 });
+

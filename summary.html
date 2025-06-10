@@ -13,7 +13,7 @@
     const emotions = JSON.parse(localStorage.getItem('emotions') || '{}');
     const dominant = localStorage.getItem('dominantEmotion');
     if (dominant) {
-      document.body.classList.add(dominant);
+      document.body.classList.add(`emotion-${dominant}`);
       const msg = document.createElement('p');
       msg.textContent = `You journeyed with ${dominant} as your guide.`;
       document.getElementById('summary').appendChild(msg);

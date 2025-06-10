@@ -6,7 +6,8 @@ body {
   align-items: center;
   background: #111;
   color: #eee;
-  font-family: Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+  transition: background 1s ease, color 1s ease, letter-spacing 1s ease;
 }
 
 #maze {
@@ -38,18 +39,51 @@ button:hover {
   background: #555;
 }
 
-body.fear {
-  background: #300;
+.emotion-fear {
+  background: radial-gradient(circle at 50% 50%, #210033, #000);
+  color: #d0caff;
+  letter-spacing: -0.02em;
+  animation: fearGlow 4s ease-in-out infinite;
 }
 
-body.hope {
-  background: #031;
+@keyframes fearGlow {
+  0%, 100% { text-shadow: 0 0 5px #45006a; }
+  50% { text-shadow: 0 0 20px #7b2fbd; }
 }
 
-body.anger {
-  background: #600;
+.emotion-hope {
+  background: radial-gradient(circle at top, #fff9c4, #fffbe6);
+  color: #222;
+  letter-spacing: 0.05em;
+  font-weight: 600;
 }
 
-body.curiosity {
-  background: #013;
+.emotion-anger {
+  background: linear-gradient(45deg, #550000, #9e1305);
+  color: #ffd0d0;
+  animation: angerShake 0.3s ease-in-out infinite alternate;
 }
+
+@keyframes angerShake {
+  from { transform: translateX(-2px); }
+  to { transform: translateX(2px); }
+}
+
+.emotion-curiosity {
+  background: linear-gradient(135deg, #00334f, #007a6e);
+  background-size: 400% 400%;
+  color: #bff;
+  animation: curiosityShift 8s ease infinite;
+}
+
+@keyframes curiosityShift {
+  0%, 100% { background-position: 0% 0%; }
+  50% { background-position: 100% 100%; }
+}
+
+.emotion-sadness {
+  background: linear-gradient(#223, #456);
+  color: #cfd8e6;
+  letter-spacing: 0.02em;
+}
+
