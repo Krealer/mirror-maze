@@ -245,6 +245,7 @@ let skills = {
   anchorUnlocked: false,
   anchorUses: 0
 };
+let mazeCorruption = 0;
 let debugPanel = null;
 
 function applyEffects(effects) {
@@ -276,6 +277,21 @@ function getDominantEmotion(emoObj) {
   return top;
 }
 
+function increaseCorruption(amount = 1) {
+  mazeCorruption += amount;
+}
+
+function applyCorruptionToButton(btn) {
+  if (mazeCorruption >= 5) {
+    btn.disabled = true;
+    setTimeout(() => (btn.disabled = false), 800);
+  }
+  if (mazeCorruption >= 3 && Math.random() < 0.3) {
+    btn.style.visibility = 'hidden';
+    setTimeout(() => (btn.style.visibility = ''), 600);
+  }
+}
+
 function updateBodyEmotion() {
   const dom = dominantEmotion();
   const cls = dom ? `emotion-${dom}` : '';
@@ -289,9 +305,10 @@ function updateBodyEmotion() {
     currentEmotionClass = cls;
   }
   if (debugPanel) {
-    debugPanel.textContent = Object.entries(emotions)
+    const emoStr = Object.entries(emotions)
       .map(([k, v]) => `${k}: ${v}`)
       .join(' | ');
+    debugPanel.textContent = `${emoStr} | corruption: ${mazeCorruption}`;
   }
 }
 
@@ -409,13 +426,19 @@ function saveGameState() {
   localStorage.setItem('playerJourney', JSON.stringify(playerJourney));
   localStorage.setItem('manipulationLog', JSON.stringify(manipulationLog));
   localStorage.setItem('skills', JSON.stringify(skills));
+  localStorage.setItem('corruption', mazeCorruption);
 }
 
 function openSelfMap() {
   const overlay = document.getElementById('self-map-overlay');
   const list = document.getElementById('self-map-content');
   list.innerHTML = '';
-  playerJourney.forEach((step, idx) => {
+  let journey = playerJourney.slice();
+  if (mazeCorruption >= 7) {
+    const forget = Math.min(journey.length - 1, Math.floor(mazeCorruption / 2));
+    journey = journey.slice(forget);
+  }
+  journey.forEach((step, idx) => {
     const div = document.createElement('div');
     div.className = 'self-map-entry';
     const line = document.createElement('div');
@@ -507,6 +530,7 @@ function showManipulation(id, cb) {
     b.textContent = ch.text;
     b.addEventListener('click', () => {
       manipulationLog.push({ room: event.id, tactic: event.type, outcome: 'submitted' });
+      increaseCorruption();
       document.body.classList.remove('manipulation-mode');
       cb();
     });
@@ -515,6 +539,7 @@ function showManipulation(id, cb) {
 
   const r = document.createElement('button');
   r.textContent = event.resistChoice.text;
+  applyCorruptionToButton(r);
   r.addEventListener('click', () => {
     manipulationLog.push({ room: event.id, tactic: event.type, outcome: 'resisted' });
     document.body.classList.remove('manipulation-mode');
@@ -523,6 +548,7 @@ function showManipulation(id, cb) {
       skills.patternSense = true;
       showSkillUnlock("Skill Unlocked: Pattern Sense");
     }
+    increaseCorruption();
     showManipulationInfo(event.explanation, cb);
   });
   r.classList.add('resist');
@@ -532,10 +558,12 @@ function showManipulation(id, cb) {
     const a = document.createElement('button');
     a.textContent = '[Emotional Anchor] Hold to my truth';
     a.classList.add('anchor');
+    applyCorruptionToButton(a);
     a.addEventListener('click', () => {
       skills.anchor -= 1;
       skills.anchorUses = (skills.anchorUses || 0) + 1;
       manipulationLog.push({ room: event.id, tactic: event.type, outcome: 'anchored' });
+      increaseCorruption();
       document.body.classList.remove('manipulation-mode');
       showSkillUnlock('Emotional Anchor Used');
       cb();
@@ -558,6 +586,7 @@ function renderManipulationRoom(room) {
     b.textContent = choice.text;
     b.addEventListener('click', () => {
       manipulationLog.push({ room: room.id, tactic: room.tactic, outcome: 'submitted' });
+      increaseCorruption();
       document.body.classList.remove('manipulation-mode');
       playerPath.push(room.id);
       playerJourney.push({ roomId: room.id, choiceText: choice.text, emotionSnapshot: dominantEmotion() });
@@ -569,6 +598,7 @@ function renderManipulationRoom(room) {
   const r = document.createElement('button');
   r.textContent = room.resistChoice.text;
   r.classList.add('resist');
+  applyCorruptionToButton(r);
   r.addEventListener('click', () => {
     manipulationLog.push({ room: room.id, tactic: room.tactic, outcome: 'resisted' });
     document.body.classList.remove('manipulation-mode');
@@ -579,6 +609,7 @@ function renderManipulationRoom(room) {
       skills.patternSense = true;
       showSkillUnlock("Skill Unlocked: Pattern Sense");
     }
+    increaseCorruption();
     showManipulationInfo(room.explanation, () => renderRoom(room.resistChoice.next));
   });
   maze.appendChild(r);
@@ -587,10 +618,12 @@ function renderManipulationRoom(room) {
     const a = document.createElement('button');
     a.textContent = '[Emotional Anchor] Hold to my truth';
     a.classList.add('anchor');
+    applyCorruptionToButton(a);
     a.addEventListener('click', () => {
       skills.anchor -= 1;
       skills.anchorUses = (skills.anchorUses || 0) + 1;
       manipulationLog.push({ room: room.id, tactic: room.tactic, outcome: 'anchored' });
+      increaseCorruption();
       document.body.classList.remove('manipulation-mode');
       playerPath.push(room.id);
       playerJourney.push({ roomId: room.id, choiceText: a.textContent, emotionSnapshot: dominantEmotion() });
@@ -697,6 +730,7 @@ function renderRoom(roomId) {
   conditionalChoicesTaken = [];
   triggeredNullDialogs = [];
   lastNullRoom = -3;
+  mazeCorruption = parseInt(localStorage.getItem('corruption') || '0');
   debugPanel = document.createElement('div');
   debugPanel.id = 'debug';
   debugPanel.style.position = 'fixed';
