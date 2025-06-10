@@ -81,6 +81,27 @@ const FLASHBACKS = [
 
 let triggeredFlashbacks = [];
 
+// Possible epilogue endings evaluated at the summary screen
+const endings = [
+  {
+    id: "ending_fear_shadow",
+    condition: (state) =>
+      state.emotions.fear > 3 && state.triggeredFlashbacks.includes("hallway"),
+    text: "You fled every reflection. Now, the silence answers for you."
+  },
+  {
+    id: "ending_hope_voice",
+    condition: (state) =>
+      state.emotions.hope >= 3 && state.triggeredFlashbacks.includes("promise"),
+    text: "You listened, even when the world didn’t. That’s why you heard the exit."
+  },
+  {
+    id: "ending_generic",
+    condition: () => true,
+    text: "The maze remains — not solved, but seen. Sometimes, that is enough."
+  }
+];
+
 const nullDialogs = [
   { text: "You are being observed." },
   { text: () => `Your ${dominantEmotion()} is noted.` },
@@ -114,6 +135,16 @@ function dominantEmotion() {
   let top = null;
   for (const key in emotions) {
     if (top === null || emotions[key] > emotions[top]) {
+      top = key;
+    }
+  }
+  return top;
+}
+
+function getDominantEmotion(emoObj) {
+  let top = null;
+  for (const key in emoObj) {
+    if (top === null || emoObj[key] > emoObj[top]) {
       top = key;
     }
   }
@@ -191,6 +222,27 @@ function checkForFlashbacks() {
   }
 }
 
+function getFinalEnding(state) {
+  for (const end of endings) {
+    try {
+      if (end.condition(state)) return end;
+    } catch (_) {
+      continue;
+    }
+  }
+  return endings[endings.length - 1];
+}
+
+function saveGameState() {
+  localStorage.setItem('playerPath', JSON.stringify(playerPath));
+  localStorage.setItem('emotions', JSON.stringify(emotions));
+  localStorage.setItem('dominantEmotion', dominantEmotion());
+  localStorage.setItem('triggeredFlashbacks', JSON.stringify(triggeredFlashbacks));
+  localStorage.setItem('conditionalChoices', JSON.stringify(conditionalChoicesTaken));
+  localStorage.setItem('nullDialogs', JSON.stringify(triggeredNullDialogs));
+  localStorage.setItem('playerJourney', JSON.stringify(playerJourney));
+}
+
 function openSelfMap() {
   const overlay = document.getElementById('self-map-overlay');
   const list = document.getElementById('self-map-content');
@@ -258,13 +310,7 @@ function showRoom(roomId) {
       if (!MAZE[next] || MAZE[next].choices.length === 0) {
         playerPath.push(next);
         playerJourney.push({ roomId: next, choiceText: 'End', emotionSnapshot: dominantEmotion() });
-        localStorage.setItem('playerPath', JSON.stringify(playerPath));
-        localStorage.setItem('emotions', JSON.stringify(emotions));
-        localStorage.setItem('dominantEmotion', dominantEmotion());
-        localStorage.setItem('triggeredFlashbacks', JSON.stringify(triggeredFlashbacks));
-        localStorage.setItem('conditionalChoices', JSON.stringify(conditionalChoicesTaken));
-        localStorage.setItem('nullDialogs', JSON.stringify(triggeredNullDialogs));
-        localStorage.setItem('playerJourney', JSON.stringify(playerJourney));
+        saveGameState();
         window.location.href = 'summary.html';
       } else {
         showRoom(next);
@@ -328,4 +374,10 @@ function showRoom(roomId) {
   showRoom('start');
   updateBodyEmotion();
 });
+
+// expose helpers for summary page
+window.getFinalEnding = getFinalEnding;
+window.getDominantEmotion = getDominantEmotion;
+window.saveGameState = saveGameState;
+window.endings = endings;
 

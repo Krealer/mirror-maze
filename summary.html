@@ -9,9 +9,11 @@
   <div id="summary">
     <p>Thanks for playing. Your journey has been recorded.</p>
   </div>
+  <div id="epilogue" class="epilogue"></div>
+  <script src="script.js"></script>
   <script>
     const emotions = JSON.parse(localStorage.getItem('emotions') || '{}');
-    const dominant = localStorage.getItem('dominantEmotion');
+    const dominant = getDominantEmotion(emotions);
     if (dominant) {
       document.body.classList.add(`emotion-${dominant}`);
       const msg = document.createElement('p');
@@ -57,6 +59,18 @@
       });
       document.body.appendChild(wrap);
     }
+
+    const state = { emotions, triggeredFlashbacks: flashbacks, playerJourney: journey };
+    state.dominantEmotion = dominant;
+    const ending = getFinalEnding(state);
+    const ep = document.getElementById('epilogue');
+    ep.classList.add(`epilogue--${dominant}`);
+    ep.innerHTML = `<p>${ending.text}</p>`;
+    const replay = document.createElement('button');
+    replay.textContent = 'Re-enter the Maze';
+    replay.addEventListener('click', () => { localStorage.clear(); window.location.href = 'maze.html'; });
+    ep.appendChild(replay);
+    setTimeout(() => ep.classList.add('show'), 300);
   </script>
 </body>
 </html>
