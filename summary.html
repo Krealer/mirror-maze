@@ -12,7 +12,11 @@
     <p>Thanks for playing. Your journey has been recorded.</p>
   </div>
   <div id="epilogue" class="epilogue"></div>
-  <script src="script.js"></script>
+  <script src="maze-data.js"></script>
+  <script src="state.js"></script>
+  <script src="flashbacks.js"></script>
+  <script src="manipulations.js"></script>
+  <script src="game.js"></script>
   <script>
     const emotions = JSON.parse(localStorage.getItem('emotions') || '{}');
     const dominant = getDominantEmotion(emotions);
