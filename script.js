@@ -3,24 +3,24 @@ const MAZE = {
     id: "start",
     prompt: "You wake up in a strange mirror room. Your reflection is missing. What do you do?",
     choices: [
-      { text: "Call out", next: "echo" },
-      { text: "Search silently", next: "shadow" }
+      { text: "Call out", next: "echo", effects: { hope: 1, fear: -1 } },
+      { text: "Search silently", next: "shadow", effects: { curiosity: 1, fear: 1 } }
     ]
   },
   echo: {
     id: "echo",
     prompt: "Your voice bounces endlessly. You feel watched.",
     choices: [
-      { text: "Stay still", next: "ending_a" },
-      { text: "Run", next: "shadow" }
+      { text: "Stay still", next: "ending_a", effects: { fear: 1 } },
+      { text: "Run", next: "shadow", effects: { fear: 1, hope: -1 } }
     ]
   },
   shadow: {
     id: "shadow",
     prompt: "A figure mimics you from the dark. It's you — but not quite.",
     choices: [
-      { text: "Talk to it", next: "ending_b" },
-      { text: "Attack it", next: "ending_c" }
+      { text: "Talk to it", next: "ending_b", effects: { curiosity: 1, hope: 1 } },
+      { text: "Attack it", next: "ending_c", effects: { anger: 2, fear: -1 } }
     ]
   },
   ending_a: {
@@ -41,6 +41,26 @@ const MAZE = {
 };
 
 let playerPath = [];
+let emotions = { fear: 0, hope: 0, anger: 0, curiosity: 0 };
+
+function applyEffects(effects) {
+  if (!effects) return;
+  for (const key in effects) {
+    if (emotions.hasOwnProperty(key)) {
+      emotions[key] += effects[key];
+    }
+  }
+}
+
+function dominantEmotion() {
+  let top = null;
+  for (const key in emotions) {
+    if (top === null || emotions[key] > emotions[top]) {
+      top = key;
+    }
+  }
+  return top;
+}
 
 function showRoom(roomId) {
   const roomData = MAZE[roomId];
@@ -60,10 +80,13 @@ function showRoom(roomId) {
     btn.textContent = choice.text;
     btn.addEventListener('click', () => {
       playerPath.push(roomId);
+      applyEffects(choice.effects);
       const next = choice.next;
       if (!MAZE[next] || MAZE[next].choices.length === 0) {
         playerPath.push(next);
         localStorage.setItem('playerPath', JSON.stringify(playerPath));
+        localStorage.setItem('emotions', JSON.stringify(emotions));
+        localStorage.setItem('dominantEmotion', dominantEmotion());
         window.location.href = 'summary.html';
       } else {
         showRoom(next);
@@ -78,5 +101,6 @@ function showRoom(roomId) {
 
 document.addEventListener('DOMContentLoaded', () => {
   playerPath = [];
+  emotions = { fear: 0, hope: 0, anger: 0, curiosity: 0 };
   showRoom('start');
 });
