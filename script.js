@@ -24,6 +24,7 @@ const MAZE = {
   shadow: {
     id: "shadow",
     prompt: "A figure mimics you from the dark. It's you — but not quite.",
+    manipulation: "guilt_pit",
     choices: [
       { text: "Talk to it", next: "ending_b", effects: { curiosity: 1, hope: 1 } },
       { text: "Attack it", next: "ending_c", effects: { anger: 2, fear: -1 } },
@@ -80,6 +81,26 @@ const FLASHBACKS = [
 ];
 
 let triggeredFlashbacks = [];
+
+const manipulationEncounters = [
+  {
+    id: "guilt_pit",
+    type: "Guilt Trip",
+    text: "They only ever wanted what’s best for you. Why are you always so difficult?",
+    manipulatedChoices: [
+      { text: "You’re right. I’ve failed.", effect: "accept_guilt" },
+      { text: "Maybe I should just give in.", effect: "surrender" }
+    ],
+    resistChoice: {
+      text: "[Recognize Manipulation] This isn’t about what I want.",
+      effect: "resist_guilt"
+    },
+    explanation: "You spotted a guilt trip — a tactic that reframes control as care."
+  }
+];
+
+let manipulationLog = [];
+let triggeredManipulations = [];
 
 // Possible epilogue endings evaluated at the summary screen
 const endings = [
@@ -241,6 +262,7 @@ function saveGameState() {
   localStorage.setItem('conditionalChoices', JSON.stringify(conditionalChoicesTaken));
   localStorage.setItem('nullDialogs', JSON.stringify(triggeredNullDialogs));
   localStorage.setItem('playerJourney', JSON.stringify(playerJourney));
+  localStorage.setItem('manipulationLog', JSON.stringify(manipulationLog));
 }
 
 function openSelfMap() {
@@ -266,9 +288,68 @@ function closeSelfMap() {
   document.getElementById('self-map-overlay').classList.remove('show');
 }
 
+function showManipulationInfo(text, cb) {
+  const box = document.getElementById('manipulation-info');
+  const txt = document.getElementById('manipulation-text');
+  const btn = document.getElementById('manipulation-ok');
+  if (!box || !txt || !btn) {
+    alert(text);
+    cb();
+    return;
+  }
+  txt.textContent = text;
+  box.classList.add('show');
+  const handler = () => {
+    box.classList.remove('show');
+    btn.removeEventListener('click', handler);
+    cb();
+  };
+  btn.addEventListener('click', handler);
+}
+
+function showManipulation(id, cb) {
+  const event = manipulationEncounters.find(m => m.id === id);
+  if (!event) { cb(); return; }
+  const maze = document.getElementById('maze');
+  maze.innerHTML = '';
+  document.body.classList.add('manipulation-mode');
+
+  const p = document.createElement('p');
+  p.textContent = event.text;
+  maze.appendChild(p);
+
+  event.manipulatedChoices.forEach(ch => {
+    const b = document.createElement('button');
+    b.textContent = ch.text;
+    b.addEventListener('click', () => {
+      manipulationLog.push({ id: event.id, type: event.type, spotted: false });
+      document.body.classList.remove('manipulation-mode');
+      cb();
+    });
+    maze.appendChild(b);
+  });
+
+  const r = document.createElement('button');
+  r.textContent = event.resistChoice.text;
+  r.addEventListener('click', () => {
+    manipulationLog.push({ id: event.id, type: event.type, spotted: true });
+    document.body.classList.remove('manipulation-mode');
+    showManipulationInfo(event.explanation, cb);
+  });
+  r.classList.add('resist');
+  maze.appendChild(r);
+}
+
 function showRoom(roomId) {
   const roomData = MAZE[roomId];
   if (!roomData) return;
+  if (roomData.manipulation && !triggeredManipulations.includes(roomData.manipulation)) {
+    showManipulation(roomData.manipulation, () => {
+      triggeredManipulations.push(roomData.manipulation);
+      showRoom(roomId);
+    });
+    return;
+  }
   const maze = document.getElementById('maze');
   maze.innerHTML = '';
 
@@ -331,6 +412,8 @@ function showRoom(roomId) {
     playerJourney = [];
     emotions = { fear: 0, hope: 0, anger: 0, curiosity: 0 };
   triggeredFlashbacks = [];
+  manipulationLog = [];
+  triggeredManipulations = [];
   conditionalChoicesTaken = [];
   triggeredNullDialogs = [];
   lastNullRoom = -3;

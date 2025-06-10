@@ -43,6 +43,16 @@
       document.getElementById('summary').appendChild(p);
     }
 
+    const manip = JSON.parse(localStorage.getItem('manipulationLog') || '[]');
+    if (manip.length) {
+      const spotted = manip.filter(m => m.spotted).length;
+      const missed = manip.length - spotted;
+      const patterns = [...new Set(manip.map(m => m.type))].join(', ');
+      const p = document.createElement('p');
+      p.textContent = `Manipulations spotted: ${spotted}/${manip.length}. Missed: ${missed}. Patterns: ${patterns}.`;
+      document.getElementById('summary').appendChild(p);
+    }
+
     const journey = JSON.parse(localStorage.getItem('playerJourney') || '[]');
     if (journey.length) {
       const wrap = document.createElement('div');
