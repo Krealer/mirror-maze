@@ -40,6 +40,23 @@
       p.textContent = 'Whispers heard: ' + nulls.slice(-2).join(' | ');
       document.getElementById('summary').appendChild(p);
     }
+
+    const journey = JSON.parse(localStorage.getItem('playerJourney') || '[]');
+    if (journey.length) {
+      const wrap = document.createElement('div');
+      wrap.id = 'self-map-final';
+      journey.forEach((step, idx) => {
+        const div = document.createElement('div');
+        div.className = 'self-map-entry';
+        div.textContent = `${idx + 1}. ${step.roomId} -> ${step.choiceText} `;
+        const span = document.createElement('span');
+        span.className = `emotion-tag emotion-color-${step.emotionSnapshot}`;
+        span.textContent = step.emotionSnapshot;
+        div.appendChild(span);
+        wrap.appendChild(div);
+      });
+      document.body.appendChild(wrap);
+    }
   </script>
 </body>
 </html>
