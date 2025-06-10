@@ -96,6 +96,7 @@ let lastNullRoom = -3;
 let conditionalChoicesTaken = [];
 
 let playerPath = [];
+let playerJourney = [];
 let emotions = { fear: 0, hope: 0, anger: 0, curiosity: 0 };
 let currentEmotionClass = '';
 let debugPanel = null;
@@ -190,6 +191,29 @@ function checkForFlashbacks() {
   }
 }
 
+function openSelfMap() {
+  const overlay = document.getElementById('self-map-overlay');
+  const list = document.getElementById('self-map-content');
+  list.innerHTML = '';
+  playerJourney.forEach((step, idx) => {
+    const div = document.createElement('div');
+    div.className = 'self-map-entry';
+    const line = document.createElement('div');
+    line.textContent = `${idx + 1}. ${step.roomId} \u2192 ${step.choiceText}`;
+    const emo = document.createElement('span');
+    emo.className = `emotion-tag emotion-color-${step.emotionSnapshot}`;
+    emo.textContent = step.emotionSnapshot;
+    line.appendChild(emo);
+    div.appendChild(line);
+    list.appendChild(div);
+  });
+  overlay.classList.add('show');
+}
+
+function closeSelfMap() {
+  document.getElementById('self-map-overlay').classList.remove('show');
+}
+
 function showRoom(roomId) {
   const roomData = MAZE[roomId];
   if (!roomData) return;
@@ -226,18 +250,21 @@ function showRoom(roomId) {
       playerPath.push(roomId);
       applyEffects(choice.effects);
       updateBodyEmotion();
+      playerJourney.push({ roomId, choiceText: choice.text, emotionSnapshot: dominantEmotion() });
       if (choice.condition) {
         conditionalChoicesTaken.push(choice.text);
       }
       const next = choice.next;
       if (!MAZE[next] || MAZE[next].choices.length === 0) {
         playerPath.push(next);
+        playerJourney.push({ roomId: next, choiceText: 'End', emotionSnapshot: dominantEmotion() });
         localStorage.setItem('playerPath', JSON.stringify(playerPath));
         localStorage.setItem('emotions', JSON.stringify(emotions));
         localStorage.setItem('dominantEmotion', dominantEmotion());
         localStorage.setItem('triggeredFlashbacks', JSON.stringify(triggeredFlashbacks));
         localStorage.setItem('conditionalChoices', JSON.stringify(conditionalChoicesTaken));
         localStorage.setItem('nullDialogs', JSON.stringify(triggeredNullDialogs));
+        localStorage.setItem('playerJourney', JSON.stringify(playerJourney));
         window.location.href = 'summary.html';
       } else {
         showRoom(next);
@@ -253,9 +280,10 @@ function showRoom(roomId) {
   maybeTriggerNullDialog();
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  playerPath = [];
-  emotions = { fear: 0, hope: 0, anger: 0, curiosity: 0 };
+  document.addEventListener('DOMContentLoaded', () => {
+    playerPath = [];
+    playerJourney = [];
+    emotions = { fear: 0, hope: 0, anger: 0, curiosity: 0 };
   triggeredFlashbacks = [];
   conditionalChoicesTaken = [];
   triggeredNullDialogs = [];
@@ -288,7 +316,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     updateBodyEmotion();
   });
-  document.body.appendChild(toggle);
+    document.body.appendChild(toggle);
+
+    const mapBtn = document.getElementById('self-map-btn');
+    const mapClose = document.getElementById('self-map-close');
+    if (mapBtn && mapClose) {
+      mapBtn.addEventListener('click', openSelfMap);
+      mapClose.addEventListener('click', closeSelfMap);
+    }
 
   showRoom('start');
   updateBodyEmotion();
