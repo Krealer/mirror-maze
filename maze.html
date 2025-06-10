@@ -32,7 +32,11 @@
     <div id="skills-content"></div>
     <button id="skills-close" aria-label="Close skills">Close</button>
   </div>
-  <script src="script.js"></script>
+  <script src="maze-data.js"></script>
+  <script src="state.js"></script>
+  <script src="flashbacks.js"></script>
+  <script src="manipulations.js"></script>
+  <script src="game.js"></script>
   <script>
     window.addEventListener('beforeunload', () => {
       if (typeof saveGameState === 'function') {
