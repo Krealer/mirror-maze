@@ -45,7 +45,18 @@ function renderRoom(roomId) {
   room.className = 'room';
 
   const p = document.createElement('p');
-  p.textContent = roomData.prompt;
+  const promptState = {
+    playerPath,
+    emotions,
+    triggeredFlashbacks,
+    manipulationLog,
+    skills
+  };
+  const promptText =
+    typeof roomData.prompt === 'function'
+      ? roomData.prompt(promptState)
+      : roomData.prompt;
+  p.textContent = promptText;
   room.appendChild(p);
 
   const available = roomData.choices.filter(ch => {
