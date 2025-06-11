@@ -113,6 +113,17 @@ function renderRoom(roomId) {
     lastNullRoom = -3;
     mazeCorruption = parseInt(localStorage.getItem('corruption') || '0');
     currentRoom = localStorage.getItem('currentRoom') || 'start';
+    runHistory = JSON.parse(localStorage.getItem('runHistory') || '[]');
+    localStorage.removeItem('runArchived');
+    if (runHistory.length) {
+      const memories = ['You\u2019ve been here before.'];
+      const last = runHistory[runHistory.length - 1] || {};
+      if (last.submitted) memories.push('Last time, you submitted.');
+      if (last.anchorUsed > 0) memories.push('The Anchor was used\u2026 and forgotten.');
+      memories.forEach(m => {
+        nullDialogs.push({ text: m, condition: () => !triggeredNullDialogs.includes(m) });
+      });
+    }
   const isDebug = ['localhost', '127.0.0.1'].includes(location.hostname) ||
     new URLSearchParams(location.search).has('debug');
 
