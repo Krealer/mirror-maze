@@ -18,6 +18,30 @@
   <script src="manipulations.js"></script>
   <script src="game.js"></script>
   <script>
+    function archiveCurrentRun() {
+      if (localStorage.getItem('runArchived') === 'true') return;
+      const history = JSON.parse(localStorage.getItem('runHistory') || '[]');
+      const entry = {
+        time: new Date().toISOString(),
+        dominant: localStorage.getItem('dominantEmotion'),
+        flashbacks: JSON.parse(localStorage.getItem('triggeredFlashbacks') || '[]'),
+        journey: JSON.parse(localStorage.getItem('playerJourney') || '[]')
+      };
+      history.push(entry);
+      localStorage.setItem('runHistory', JSON.stringify(history));
+      localStorage.setItem('runArchived', 'true');
+    }
+
+    function clearRunState() {
+      const keep = ['runHistory'];
+      Object.keys(localStorage).forEach(k => {
+        if (!keep.includes(k)) {
+          localStorage.removeItem(k);
+        }
+      });
+      localStorage.removeItem('runArchived');
+    }
+
     const emotions = JSON.parse(localStorage.getItem('emotions') || '{}');
     const dominant = getDominantEmotion(emotions);
     if (dominant) {
@@ -71,6 +95,7 @@
     }
 
     const journey = JSON.parse(localStorage.getItem('playerJourney') || '[]');
+    archiveCurrentRun();
     if (journey.length) {
       const wrap = document.createElement('div');
       wrap.id = 'self-map-final';
@@ -87,6 +112,13 @@
       document.body.appendChild(wrap);
     }
 
+    const history = JSON.parse(localStorage.getItem('runHistory') || '[]');
+    if (history.length) {
+      const hp = document.createElement('p');
+      hp.textContent = `Completed runs archived: ${history.length}`;
+      document.getElementById('summary').appendChild(hp);
+    }
+
     const state = { emotions, triggeredFlashbacks: flashbacks, playerJourney: journey };
     state.dominantEmotion = dominant;
     const ending = getFinalEnding(state);
@@ -97,7 +129,10 @@
     const replay = document.createElement('button');
     replay.setAttribute('aria-label', 'Restart game');
     replay.textContent = 'Re-enter the Maze';
-    replay.addEventListener('click', () => { localStorage.clear(); window.location.href = 'maze.html'; });
+    replay.addEventListener('click', () => {
+      clearRunState();
+      window.location.href = 'maze.html';
+    });
     ep.appendChild(replay);
     setTimeout(() => ep.classList.add('show'), 300);
   </script>
