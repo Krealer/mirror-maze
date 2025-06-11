@@ -15,6 +15,7 @@
   <script src="maze-data.js"></script>
   <script src="state.js"></script>
   <script src="flashbacks.js"></script>
+  <script src="distortions.js"></script>
   <script src="manipulations.js"></script>
   <script src="game.js"></script>
   <script>
@@ -27,6 +28,7 @@
         time: new Date().toISOString(),
         dominant: localStorage.getItem('dominantEmotion'),
         flashbacks: JSON.parse(localStorage.getItem('triggeredFlashbacks') || '[]'),
+        distortions: JSON.parse(localStorage.getItem('distortions') || '[]'),
         journey: JSON.parse(localStorage.getItem('playerJourney') || '[]'),
         submitted: manip.some(m => m.outcome === 'submitted'),
         anchorUsed: skills.anchorUses || 0
@@ -56,11 +58,17 @@
     }
 
     const flashbacks = JSON.parse(localStorage.getItem('triggeredFlashbacks') || '[]');
+    const distortions = JSON.parse(localStorage.getItem('distortions') || '[]');
     if (flashbacks.length) {
       const labels = { hallway: 'The Hallway', promise: 'The Promise' };
       const wrap = document.createElement('p');
       wrap.textContent = 'You remembered: ' + flashbacks.map(id => labels[id] || id).join(', ') + '.';
       document.getElementById('summary').appendChild(wrap);
+    }
+    if (distortions.length) {
+      const dp = document.createElement("p");
+      dp.textContent = "Distortions experienced: " + distortions.join(", ") + ".";
+      document.getElementById("summary").appendChild(dp);
     }
 
     const conditionals = JSON.parse(localStorage.getItem('conditionalChoices') || '[]');
