@@ -9,11 +9,13 @@ function showManipulationInfo(text, cb) {
   }
   txt.textContent = text;
   box.classList.add('show');
+  document.addEventListener('keydown', handleManipInfoKey);
   lastFocusedElement = document.activeElement;
   btn.focus();
   const handler = () => {
     box.classList.remove('show');
     btn.removeEventListener('click', handler);
+    document.removeEventListener('keydown', handleManipInfoKey);
     if (lastFocusedElement) lastFocusedElement.focus();
     cb();
   };
@@ -79,6 +81,9 @@ function showManipulation(id, cb) {
     });
     maze.appendChild(a);
   }
+  const firstBtn = maze.querySelector('button');
+  if (firstBtn) firstBtn.focus();
+  maze.addEventListener('keydown', handleChoiceNavigation);
 }
 
 function renderManipulationRoom(room) {
@@ -141,4 +146,7 @@ function renderManipulationRoom(room) {
     });
     maze.appendChild(a);
   }
+  const firstBtn = maze.querySelector('button');
+  if (firstBtn) firstBtn.focus();
+  maze.addEventListener('keydown', handleChoiceNavigation);
 }

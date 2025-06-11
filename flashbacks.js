@@ -5,12 +5,14 @@ function showFlashback(text) {
   txt.textContent = text;
   box.classList.add('show');
   document.body.classList.add('flashback-mode');
+  document.addEventListener('keydown', handleFlashbackKey);
   lastFocusedElement = document.activeElement;
   btn.focus();
   const handler = () => {
     box.classList.remove('show');
     document.body.classList.remove('flashback-mode');
     btn.removeEventListener('click', handler);
+    document.removeEventListener('keydown', handleFlashbackKey);
     if (lastFocusedElement) lastFocusedElement.focus();
   };
   btn.addEventListener('click', handler);

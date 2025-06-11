@@ -1,3 +1,19 @@
+function handleChoiceNavigation(e) {
+  const keys = ['ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight'];
+  if (!keys.includes(e.key)) return;
+  const buttons = Array.from(e.currentTarget.querySelectorAll('button'));
+  const idx = buttons.indexOf(document.activeElement);
+  if (idx === -1) return;
+  e.preventDefault();
+  let next = idx;
+  if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+    next = idx > 0 ? idx - 1 : buttons.length - 1;
+  } else {
+    next = idx < buttons.length - 1 ? idx + 1 : 0;
+  }
+  buttons[next].focus();
+}
+
 function renderRoom(roomId) {
   currentRoom = roomId;
   const roomData = MAZE[roomId] || manipulationRooms[roomId];
@@ -73,6 +89,9 @@ function renderRoom(roomId) {
 
   maze.appendChild(room);
   requestAnimationFrame(() => room.classList.add('visible'));
+  const firstBtn = room.querySelector('button');
+  if (firstBtn) firstBtn.focus();
+  room.addEventListener('keydown', handleChoiceNavigation);
   updateBodyEmotion();
   checkForFlashbacks();
   maybeTriggerNullDialog();
