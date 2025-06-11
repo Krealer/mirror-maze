@@ -23,6 +23,36 @@ let skills = {
 let mazeCorruption = 0;
 let debugPanel = null;
 
+function handleSelfMapKey(e) {
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    closeSelfMap();
+  }
+}
+
+function handleSkillsKey(e) {
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    closeSkills();
+  }
+}
+
+function handleFlashbackKey(e) {
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    const btn = document.getElementById('flashback-ok');
+    if (btn) btn.click();
+  }
+}
+
+function handleManipInfoKey(e) {
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    const btn = document.getElementById('manipulation-ok');
+    if (btn) btn.click();
+  }
+}
+
 function applyEffects(effects) {
   if (!effects) return;
   for (const key in effects) {
@@ -161,12 +191,14 @@ function showFlashback(text) {
   txt.textContent = text;
   box.classList.add('show');
   document.body.classList.add('flashback-mode');
+  document.addEventListener('keydown', handleFlashbackKey);
   lastFocusedElement = document.activeElement;
   btn.focus();
   const handler = () => {
     box.classList.remove('show');
     document.body.classList.remove('flashback-mode');
     btn.removeEventListener('click', handler);
+    document.removeEventListener('keydown', handleFlashbackKey);
     if (lastFocusedElement) lastFocusedElement.focus();
   };
   btn.addEventListener('click', handler);
@@ -231,6 +263,7 @@ function openSelfMap() {
   });
   overlay.classList.add('show');
   overlay.setAttribute('aria-hidden', 'false');
+  document.addEventListener('keydown', handleSelfMapKey);
   lastFocusedElement = document.activeElement;
   const closeBtn = document.getElementById('self-map-close');
   if (closeBtn) closeBtn.focus();
@@ -240,6 +273,7 @@ function closeSelfMap() {
   const overlay = document.getElementById('self-map-overlay');
   overlay.classList.remove('show');
   overlay.setAttribute('aria-hidden', 'true');
+  document.removeEventListener('keydown', handleSelfMapKey);
   if (lastFocusedElement) lastFocusedElement.focus();
 }
 
@@ -273,6 +307,7 @@ function openSkills() {
   });
   overlay.classList.add('show');
   overlay.setAttribute('aria-hidden', 'false');
+  document.addEventListener('keydown', handleSkillsKey);
   lastFocusedElement = document.activeElement;
   const closeBtn = document.getElementById('skills-close');
   if (closeBtn) closeBtn.focus();
@@ -282,5 +317,6 @@ function closeSkills() {
   const overlay = document.getElementById('skills-overlay');
   overlay.classList.remove('show');
   overlay.setAttribute('aria-hidden', 'true');
+  document.removeEventListener('keydown', handleSkillsKey);
   if (lastFocusedElement) lastFocusedElement.focus();
 }
