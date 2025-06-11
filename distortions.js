@@ -38,8 +38,14 @@ function checkForDistortions() {
   for (const d of DISTORTIONS) {
     if (!triggeredDistortions.includes(d.id) && d.condition(state)) {
       triggeredDistortions.push(d.id);
-      showDistortion(d.text, d.alterPrompt);
-      increaseCorruption(1);
+      if (skills.truthSense) {
+        skills.truthSenseTriggers = (skills.truthSenseTriggers || 0) + 1;
+        showNullDialog('Truth Sense rejects a false memory.');
+      } else {
+        showDistortion(d.text, d.alterPrompt);
+        increaseCorruption(1);
+      }
+      maybeGrantTruthSense();
       break;
     }
   }

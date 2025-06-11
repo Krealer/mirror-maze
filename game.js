@@ -131,6 +131,7 @@ function renderRoom(roomId) {
         nullDialogs.push({ text: m, condition: () => !triggeredNullDialogs.includes(m) });
       });
     }
+    maybeGrantTruthSense();
   const isDebug = ['localhost', '127.0.0.1'].includes(location.hostname) ||
     new URLSearchParams(location.search).has('debug');
 
