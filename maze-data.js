@@ -223,3 +223,22 @@ const nullDialogs = [
   { text: "The mirror is not your ally.", condition: (s) => s.triggeredFlashbacks.includes('hallway') },
   { text: "You will remember this command." }
 ];
+
+const DISTORTIONS = [
+  {
+    id: 'false_escape',
+    condition: (s) => s.playerPath.length >= 3,
+    text: 'You remember stepping outside the maze already... yet here you stand.'
+  },
+  {
+    id: 'twisted_promise',
+    condition: (s) => s.triggeredFlashbacks.includes('promise') && s.emotions.fear >= 3,
+    text: 'A new memory surfaces: a vow to remain trapped forever. Did you really say that?'
+  },
+  {
+    id: 'room_shift',
+    condition: (s) => s.playerPath.includes('hidden') && s.playerPath.length > 4,
+    text: 'The walls ripple. For a heartbeat the corridor resembles a childhood bedroom.',
+    alterPrompt: 'This room shouldn\'t look so familiar. The comfort is unsettling.'
+  }
+];

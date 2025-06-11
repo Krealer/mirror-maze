@@ -96,6 +96,7 @@ function renderRoom(roomId) {
   updateBodyEmotion();
   checkForFlashbacks();
   maybeTriggerNullDialog();
+  checkForDistortions();
 }
 
   document.addEventListener('DOMContentLoaded', () => {
@@ -103,6 +104,7 @@ function renderRoom(roomId) {
     playerJourney = safeJsonParse('playerJourney', []);
     emotions = safeJsonParse('emotions', { fear: 0, hope: 0, anger: 0, curiosity: 0 });
     triggeredFlashbacks = safeJsonParse('triggeredFlashbacks', []);
+    triggeredDistortions = safeJsonParse('distortions', []);
     skills = Object.assign(skills, safeJsonParse('skills', {}));
     manipulationLog = safeJsonParse('manipulationLog', []);
     triggeredManipulations = [];

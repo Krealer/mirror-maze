@@ -1,4 +1,5 @@
 let triggeredFlashbacks = [];
+let triggeredDistortions = [];
 let manipulationLog = [];
 let triggeredManipulations = [];
 let triggeredNullDialogs = [];
@@ -252,6 +253,7 @@ function saveGameState() {
   localStorage.setItem('emotions', JSON.stringify(emotions));
   localStorage.setItem('dominantEmotion', dominantEmotion());
   localStorage.setItem('triggeredFlashbacks', JSON.stringify(triggeredFlashbacks));
+  localStorage.setItem('distortions', JSON.stringify(triggeredDistortions));
   localStorage.setItem('conditionalChoices', JSON.stringify(conditionalChoicesTaken));
   localStorage.setItem('nullDialogs', JSON.stringify(triggeredNullDialogs));
   localStorage.setItem('playerJourney', JSON.stringify(playerJourney));

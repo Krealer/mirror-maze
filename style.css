@@ -173,7 +173,47 @@ button:hover {
 @keyframes flashIn {
   from { opacity: 0; }
   to { opacity: 1; }
+/* Distortion visual mode */
+.distortion-mode {
+  filter: contrast(1.2) hue-rotate(30deg);
 }
+
+.distortion-mode #maze {
+  transform: skewX(1deg);
+}
+
+#distortion-box {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  color: #fff;
+  z-index: 1050;
+}
+
+#distortion-box.show {
+  display: flex;
+}
+
+.distortion-text {
+  font-size: 1.1em;
+  margin-bottom: 20px;
+  opacity: 0;
+  animation: distortIn 0.8s forwards;
+}
+
+@keyframes distortIn {
+  from { opacity: 0; transform: skewX(3deg); }
+  to { opacity: 1; transform: skewX(0); }
+}
+
 
 /* highlight gated choices when debug is active */
 .debug-mode button[data-gated="true"] {
