@@ -28,6 +28,14 @@ The project is entirely static and does not require a build step. There are also
 
 Enjoy exploring the maze!
 
+## Skills
+
+As you progress, you may unlock special abilities:
+
+- **Pattern Sense** – notice manipulation tactics before they unfold.
+- **Emotional Anchor** – ground yourself in self-trust to resist control.
+- **Truth Sense** – automatically detect false memories and distorted rooms after surviving repeated loops.
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE).

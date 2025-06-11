@@ -19,7 +19,9 @@ let skills = {
   patternSenseUses: 0,
   anchor: 0,
   anchorUnlocked: false,
-  anchorUses: 0
+  anchorUses: 0,
+  truthSense: false,
+  truthSenseTriggers: 0
 };
 let mazeCorruption = 0;
 let debugPanel = null;
@@ -205,6 +207,16 @@ function maybeGrantAnchor() {
   }
 }
 
+function maybeGrantTruthSense() {
+  if (skills.truthSense) return;
+  const loops = runHistory.length;
+  const survived = manipulationLog.filter(m => m.outcome !== 'submitted').length;
+  if (loops >= 2 || survived >= 4) {
+    skills.truthSense = true;
+    showSkillUnlock('Skill Unlocked: Truth Sense');
+  }
+}
+
 
 function showFlashback(text) {
   const box = document.getElementById('flashback-box');
@@ -316,6 +328,12 @@ function openSkills() {
     name: 'Emotional Anchor',
     uses: skills.anchorUses || 0,
     desc: 'Ground yourself in self-trust to resist manipulation.'
+  });
+  entries.push({
+    unlocked: skills.truthSense,
+    name: 'Truth Sense',
+    uses: skills.truthSenseTriggers || 0,
+    desc: 'Automatically detect false memories and distorted rooms.'
   });
   entries.forEach(e => {
     const div = document.createElement('div');

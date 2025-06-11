@@ -105,6 +105,11 @@
       ap.textContent = `Skill unlocked: Emotional Anchor - used ${skills.anchorUses || 0} times`;
       document.getElementById("summary").appendChild(ap);
     }
+    if (skills.truthSense) {
+      const tp = document.createElement("p");
+      tp.textContent = `Skill unlocked: Truth Sense - triggered ${skills.truthSenseTriggers || 0} times`;
+      document.getElementById("summary").appendChild(tp);
+    }
 
     const journey = JSON.parse(localStorage.getItem('playerJourney') || '[]');
     archiveCurrentRun();

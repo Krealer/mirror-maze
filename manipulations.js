@@ -55,6 +55,7 @@ function showManipulation(id, cb) {
     manipulationLog.push({ room: event.id, tactic: event.type, outcome: 'resisted' });
     document.body.classList.remove('manipulation-mode');
     maybeGrantAnchor();
+    maybeGrantTruthSense();
     if (!skills.patternSense) {
       skills.patternSense = true;
       showSkillUnlock("Skill Unlocked: Pattern Sense");
@@ -119,6 +120,7 @@ function renderManipulationRoom(room) {
     playerPath.push(room.id);
     playerJourney.push({ roomId: room.id, choiceText: r.textContent, emotionSnapshot: dominantEmotion() });
     maybeGrantAnchor();
+    maybeGrantTruthSense();
     if (!skills.patternSense) {
       skills.patternSense = true;
       showSkillUnlock("Skill Unlocked: Pattern Sense");
