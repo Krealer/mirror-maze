@@ -24,6 +24,26 @@ let mazeCorruption = 0;
 let debugPanel = null;
 let runHistory = [];
 
+function safeJsonParse(key, fallback) {
+  const val = localStorage.getItem(key);
+  if (val === null || val === undefined) return fallback;
+  try {
+    return JSON.parse(val);
+  } catch (e) {
+    console.warn('Corrupted localStorage detected. Clearing data.');
+    localStorage.clear();
+    return fallback;
+  }
+}
+
+function isValidRoomId(id) {
+  return !!(MAZE[id] || manipulationRooms[id]);
+}
+
+function isEndingRoom(id) {
+  return MAZE[id] && Array.isArray(MAZE[id].choices) && MAZE[id].choices.length === 0;
+}
+
 function handleSelfMapKey(e) {
   if (e.key === 'Escape') {
     e.preventDefault();
