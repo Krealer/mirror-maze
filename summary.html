@@ -21,11 +21,15 @@
     function archiveCurrentRun() {
       if (localStorage.getItem('runArchived') === 'true') return;
       const history = JSON.parse(localStorage.getItem('runHistory') || '[]');
+      const manip = JSON.parse(localStorage.getItem('manipulationLog') || '[]');
+      const skills = JSON.parse(localStorage.getItem('skills') || '{}');
       const entry = {
         time: new Date().toISOString(),
         dominant: localStorage.getItem('dominantEmotion'),
         flashbacks: JSON.parse(localStorage.getItem('triggeredFlashbacks') || '[]'),
-        journey: JSON.parse(localStorage.getItem('playerJourney') || '[]')
+        journey: JSON.parse(localStorage.getItem('playerJourney') || '[]'),
+        submitted: manip.some(m => m.outcome === 'submitted'),
+        anchorUsed: skills.anchorUses || 0
       };
       history.push(entry);
       localStorage.setItem('runHistory', JSON.stringify(history));

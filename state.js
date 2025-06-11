@@ -22,6 +22,7 @@ let skills = {
 };
 let mazeCorruption = 0;
 let debugPanel = null;
+let runHistory = [];
 
 function handleSelfMapKey(e) {
   if (e.key === 'Escape') {
