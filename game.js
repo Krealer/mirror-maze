@@ -15,9 +15,10 @@ function handleChoiceNavigation(e) {
 }
 
 function renderRoom(roomId) {
-  currentRoom = roomId;
+  if (!isValidRoomId(roomId)) return;
+  if (isEndingRoom(roomId)) return;
   const roomData = MAZE[roomId] || manipulationRooms[roomId];
-  if (!roomData) return;
+  currentRoom = roomId;
   if (roomData.manipulation && !triggeredManipulations.includes(roomData.manipulation)) {
     const run = () => {
       showManipulation(roomData.manipulation, () => {
@@ -98,22 +99,26 @@ function renderRoom(roomId) {
 }
 
   document.addEventListener('DOMContentLoaded', () => {
-    playerPath = JSON.parse(localStorage.getItem('playerPath') || '[]');
-    playerJourney = JSON.parse(localStorage.getItem('playerJourney') || '[]');
-    emotions = JSON.parse(
-      localStorage.getItem('emotions') ||
-        JSON.stringify({ fear: 0, hope: 0, anger: 0, curiosity: 0 })
-    );
-    triggeredFlashbacks = JSON.parse(localStorage.getItem('triggeredFlashbacks') || '[]');
-    skills = Object.assign(skills, JSON.parse(localStorage.getItem('skills') || '{}'));
-    manipulationLog = JSON.parse(localStorage.getItem('manipulationLog') || '[]');
+    playerPath = safeJsonParse('playerPath', []);
+    playerJourney = safeJsonParse('playerJourney', []);
+    emotions = safeJsonParse('emotions', { fear: 0, hope: 0, anger: 0, curiosity: 0 });
+    triggeredFlashbacks = safeJsonParse('triggeredFlashbacks', []);
+    skills = Object.assign(skills, safeJsonParse('skills', {}));
+    manipulationLog = safeJsonParse('manipulationLog', []);
     triggeredManipulations = [];
-    conditionalChoicesTaken = JSON.parse(localStorage.getItem('conditionalChoices') || '[]');
-    triggeredNullDialogs = JSON.parse(localStorage.getItem('nullDialogs') || '[]');
+    conditionalChoicesTaken = safeJsonParse('conditionalChoices', []);
+    triggeredNullDialogs = safeJsonParse('nullDialogs', []);
     lastNullRoom = -3;
     mazeCorruption = parseInt(localStorage.getItem('corruption') || '0');
     currentRoom = localStorage.getItem('currentRoom') || 'start';
-    runHistory = JSON.parse(localStorage.getItem('runHistory') || '[]');
+    if (!isValidRoomId(currentRoom) || isEndingRoom(currentRoom)) {
+      currentRoom = 'start';
+    }
+    if (!isValidRoomId('start') || isEndingRoom('start')) {
+      const fallback = Object.keys(MAZE).find(id => !isEndingRoom(id));
+      if (fallback) currentRoom = fallback;
+    }
+    runHistory = safeJsonParse('runHistory', []);
     localStorage.removeItem('runArchived');
     if (runHistory.length) {
       const memories = ['You\u2019ve been here before.'];
