@@ -109,8 +109,28 @@ const MAZE = {
   },
   null_pass: {
     id: "null_pass",
-    prompt: "The gate dissolves, leaving only clarity. You move forward." ,
-    choices: [ { text: "Step through", next: "ending_d", effects: { hope: 1 } } ]
+    prompt: "The gate dissolves, leaving only clarity. You move forward.",
+    choices: [ { text: "Step through", next: "null_path_1", effects: { hope: 1 } } ]
+  },
+  null_path_1: {
+    id: "null_path_1",
+    prompt: (s) => {
+      const resisted = (s.manipulationLog || []).filter(m => m.outcome === 'resisted' || m.outcome === 'anchored').length;
+      const submitted = (s.manipulationLog || []).filter(m => m.outcome === 'submitted').length;
+      const memories = (s.triggeredFlashbacks || []).length;
+      return `Mirrors reveal ${resisted} defiances and ${submitted} submissions. Memories recalled: ${memories}.`;
+    },
+    choices: [ { text: "Continue", next: "null_path_2" } ]
+  },
+  null_path_2: {
+    id: "null_path_2",
+    prompt: "Faces of your journey watch silently, awaiting acknowledgement.",
+    choices: [ { text: "Breathe", next: "null_end" } ]
+  },
+  null_end: {
+    id: "null_end",
+    prompt: "A final mirror shows your reflection whole. You step through and the maze fades behind you. End.",
+    choices: []
   },
   null_fail: {
     id: "null_fail",
@@ -227,6 +247,16 @@ const manipulationEncounters = [
 
 // Possible epilogue endings evaluated at the summary screen
 const endings = [
+  {
+    id: "ending_null_true",
+    condition: (state) => state.playerJourney.some((s) => s.roomId === 'null_end'),
+    text: (state) => {
+      const resisted = (state.manipulationLog || []).filter(m => m.outcome === 'resisted' || m.outcome === 'anchored').length;
+      const submitted = (state.manipulationLog || []).filter(m => m.outcome === 'submitted').length;
+      const memories = (state.triggeredFlashbacks || []).length;
+      return `You integrated every shadow and echo. Defiance: ${resisted}, Submission: ${submitted}, Memories reclaimed: ${memories}. With ${state.dominantEmotion || 'resolve'}, you leave the maze whole.`;
+    }
+  },
   {
     id: "ending_fear_shadow",
     condition: (state) =>

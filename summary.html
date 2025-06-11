@@ -136,13 +136,14 @@
       document.getElementById('summary').appendChild(hp);
     }
 
-    const state = { emotions, triggeredFlashbacks: flashbacks, playerJourney: journey };
+    const state = { emotions, triggeredFlashbacks: flashbacks, playerJourney: journey, manipulationLog: manip };
     state.dominantEmotion = dominant;
     const ending = getFinalEnding(state);
     const ep = document.getElementById('epilogue');
     const epClass = dominant ? `epilogue--${dominant}` : 'epilogue--neutral';
     ep.classList.add(epClass);
-    ep.innerHTML = `<p>${ending.text}</p>`;
+    const epText = typeof ending.text === 'function' ? ending.text(state) : ending.text;
+    ep.innerHTML = `<p>${epText}</p>`;
     const replay = document.createElement('button');
     replay.setAttribute('aria-label', 'Restart game');
     replay.textContent = 'Re-enter the Maze';
