@@ -46,7 +46,13 @@ const MAZE = {
     choices: [
       { text: "Press forward", next: "ending_d", effects: { curiosity: 1 } },
       { text: "Retreat", next: "start", effects: { fear: -1 } },
-      { text: "Listen to the accusing whispers", next: "guilt_chamber", effects: { fear: 1 } }
+      { text: "Listen to the accusing whispers", next: "guilt_chamber", effects: { fear: 1 } },
+      {
+        text: "Seek the Null Gate",
+        next: "null_gate",
+        condition: (_p, _e, _f) => skills.patternSense && skills.anchorUnlocked && skills.truthSense,
+        effects: { curiosity: 2 }
+      }
     ]
   },
   idol_room: {
@@ -85,6 +91,30 @@ const MAZE = {
   ending_d: {
     id: "ending_d",
     prompt: "A final door opens and you vanish beyond the mirrors. End.",
+    choices: []
+  },
+  null_gate: {
+    id: "null_gate",
+    prompt: "A silent doorway of negative space reflects every choice you've made. It asks: Who guides you now?",
+    choices: [
+      { text: "The maze decides my fate", next: "null_fail", effects: { fear: 1 } },
+      { text: "Whichever feeling is loudest", next: "null_fail", effects: { curiosity: 1 } },
+      {
+        text: "I trust my anchor, pattern, and truth",
+        next: "null_pass",
+        condition: (_p, _e, _f) => skills.patternSense && skills.anchorUnlocked && skills.truthSense,
+        effects: { hope: 2 }
+      }
+    ]
+  },
+  null_pass: {
+    id: "null_pass",
+    prompt: "The gate dissolves, leaving only clarity. You move forward." ,
+    choices: [ { text: "Step through", next: "ending_d", effects: { hope: 1 } } ]
+  },
+  null_fail: {
+    id: "null_fail",
+    prompt: "The gate remains closed. Your reflection fades. End.",
     choices: []
   }
 };
